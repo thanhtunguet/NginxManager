@@ -3,10 +3,12 @@ import { Table, Button, Space, message, Modal, Form, Input } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import api from "../services/api";
-import { Domain, CreateDomainRequest } from "../types";
+import { Domain, CreateDomainRequest, UpdateDomainRequest } from "../types";
 
 const Domains: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingDomain, setEditingDomain] = useState<Domain | null>(null);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -31,6 +33,22 @@ const Domains: React.FC = () => {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateDomainRequest }) =>
+      api.patch(`/domains/${id}`, data),
+    onSuccess: () => {
+      message.success("Domain updated successfully");
+      setIsModalVisible(false);
+      setIsEditMode(false);
+      setEditingDomain(null);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ["domains"] });
+    },
+    onError: () => {
+      message.error("Failed to update domain");
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/domains/${id}`),
     onSuccess: () => {
@@ -43,17 +61,35 @@ const Domains: React.FC = () => {
   });
 
   const handleCreate = () => {
+    setIsEditMode(false);
+    setEditingDomain(null);
     setIsModalVisible(true);
+    form.resetFields();
+  };
+
+  const handleEdit = (domain: Domain) => {
+    setIsEditMode(true);
+    setEditingDomain(domain);
+    setIsModalVisible(true);
+    form.setFieldsValue({
+      domain: domain.domain,
+    });
   };
 
   const handleModalOk = () => {
     form.validateFields().then((values) => {
-      createMutation.mutate(values);
+      if (isEditMode && editingDomain) {
+        updateMutation.mutate({ id: editingDomain.id, data: values });
+      } else {
+        createMutation.mutate(values);
+      }
     });
   };
 
   const handleModalCancel = () => {
     setIsModalVisible(false);
+    setIsEditMode(false);
+    setEditingDomain(null);
     form.resetFields();
   };
 
@@ -82,7 +118,7 @@ const Domains: React.FC = () => {
           <Button
             type="link"
             icon={<EditOutlined />}
-            onClick={() => console.log("Edit", record.id)}
+            onClick={() => handleEdit(record)}
           >
             Edit
           </Button>
@@ -128,11 +164,11 @@ const Domains: React.FC = () => {
       />
 
       <Modal
-        title="Create New Domain"
+        title={isEditMode ? "Edit Domain" : "Create New Domain"}
         open={isModalVisible}
         onOk={handleModalOk}
         onCancel={handleModalCancel}
-        confirmLoading={createMutation.isPending}
+        confirmLoading={createMutation.isPending || updateMutation.isPending}
         width={500}
       >
         <Form form={form} layout="vertical">

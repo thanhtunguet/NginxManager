@@ -14,13 +14,15 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import api from "../services/api";
-import { HttpServer, CreateHttpServerRequest, ListeningPort } from "../types";
+import { HttpServer, CreateHttpServerRequest, UpdateHttpServerRequest, ListeningPort } from "../types";
 
 const { Option } = Select;
 const { TextArea } = Input;
 
 const Servers: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingServer, setEditingServer] = useState<HttpServer | null>(null);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -53,6 +55,22 @@ const Servers: React.FC = () => {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateHttpServerRequest }) =>
+      api.patch(`/servers/${id}`, data),
+    onSuccess: () => {
+      message.success("Server updated successfully");
+      setIsModalVisible(false);
+      setIsEditMode(false);
+      setEditingServer(null);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ["servers"] });
+    },
+    onError: () => {
+      message.error("Failed to update server");
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/servers/${id}`),
     onSuccess: () => {
@@ -65,17 +83,40 @@ const Servers: React.FC = () => {
   });
 
   const handleCreate = () => {
+    setIsEditMode(false);
+    setEditingServer(null);
     setIsModalVisible(true);
+    form.resetFields();
+  };
+
+  const handleEdit = (server: HttpServer) => {
+    setIsEditMode(true);
+    setEditingServer(server);
+    setIsModalVisible(true);
+    form.setFieldsValue({
+      listeningPortId: server.listeningPortId,
+      name: server.name,
+      logLevel: server.logLevel,
+      accessLogPath: server.accessLogPath,
+      errorLogPath: server.errorLogPath,
+      additionalConfig: server.additionalConfig,
+    });
   };
 
   const handleModalOk = () => {
     form.validateFields().then((values) => {
-      createMutation.mutate(values);
+      if (isEditMode && editingServer) {
+        updateMutation.mutate({ id: editingServer.id, data: values });
+      } else {
+        createMutation.mutate(values);
+      }
     });
   };
 
   const handleModalCancel = () => {
     setIsModalVisible(false);
+    setIsEditMode(false);
+    setEditingServer(null);
     form.resetFields();
   };
 
@@ -117,7 +158,7 @@ const Servers: React.FC = () => {
           <Button
             type="link"
             icon={<EditOutlined />}
-            onClick={() => console.log("Edit", record.id)}
+            onClick={() => handleEdit(record)}
           >
             Edit
           </Button>
@@ -163,11 +204,11 @@ const Servers: React.FC = () => {
       />
 
       <Modal
-        title="Create New Server"
+        title={isEditMode ? "Edit Server" : "Create New Server"}
         open={isModalVisible}
         onOk={handleModalOk}
         onCancel={handleModalCancel}
-        confirmLoading={createMutation.isPending}
+        confirmLoading={createMutation.isPending || updateMutation.isPending}
         width={600}
       >
         <Form

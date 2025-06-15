@@ -15,12 +15,14 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import api from "../services/api";
-import { Certificate, CreateCertificateRequest } from "../types";
+import { Certificate, CreateCertificateRequest, UpdateCertificateRequest } from "../types";
 
 const { TextArea } = Input;
 
 const Certificates: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingCertificate, setEditingCertificate] = useState<Certificate | null>(null);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -46,6 +48,22 @@ const Certificates: React.FC = () => {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateCertificateRequest }) =>
+      api.patch(`/certificates/${id}`, data),
+    onSuccess: () => {
+      message.success("Certificate updated successfully");
+      setIsModalVisible(false);
+      setIsEditMode(false);
+      setEditingCertificate(null);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ["certificates"] });
+    },
+    onError: () => {
+      message.error("Failed to update certificate");
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/certificates/${id}`),
     onSuccess: () => {
@@ -58,23 +76,51 @@ const Certificates: React.FC = () => {
   });
 
   const handleCreate = () => {
+    setIsEditMode(false);
+    setEditingCertificate(null);
     setIsModalVisible(true);
+    form.resetFields();
+  };
+
+  const handleEdit = (certificate: Certificate) => {
+    setIsEditMode(true);
+    setEditingCertificate(certificate);
+    setIsModalVisible(true);
+    form.setFieldsValue({
+      name: certificate.name,
+      certificate: certificate.certificate,
+      privateKey: certificate.privateKey,
+      expiredAt: certificate.expiresAt ? dayjs(certificate.expiresAt) : null,
+      issuer: certificate.issuer,
+      autoRenew: certificate.autoRenew,
+    });
   };
 
   const handleModalOk = () => {
     form.validateFields().then((values) => {
       const formData = {
-        ...values,
-        expiredAt: values.expiredAt
+        name: values.name,
+        certificate: values.certificate,
+        privateKey: values.privateKey,
+        expiresAt: values.expiredAt
           ? values.expiredAt.format("YYYY-MM-DD")
           : undefined,
+        issuer: values.issuer,
+        autoRenew: values.autoRenew,
       };
-      createMutation.mutate(formData);
+      
+      if (isEditMode && editingCertificate) {
+        updateMutation.mutate({ id: editingCertificate.id, data: formData });
+      } else {
+        createMutation.mutate(formData);
+      }
     });
   };
 
   const handleModalCancel = () => {
     setIsModalVisible(false);
+    setIsEditMode(false);
+    setEditingCertificate(null);
     form.resetFields();
   };
 
@@ -124,7 +170,7 @@ const Certificates: React.FC = () => {
           <Button
             type="link"
             icon={<EditOutlined />}
-            onClick={() => console.log("Edit", record.id)}
+            onClick={() => handleEdit(record)}
           >
             Edit
           </Button>
@@ -170,11 +216,11 @@ const Certificates: React.FC = () => {
       />
 
       <Modal
-        title="Create New Certificate"
+        title={isEditMode ? "Edit Certificate" : "Create New Certificate"}
         open={isModalVisible}
         onOk={handleModalOk}
         onCancel={handleModalCancel}
-        confirmLoading={createMutation.isPending}
+        confirmLoading={createMutation.isPending || updateMutation.isPending}
         width={700}
       >
         <Form

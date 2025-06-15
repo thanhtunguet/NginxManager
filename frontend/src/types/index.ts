@@ -102,12 +102,25 @@ export interface CreateDomainRequest {
   domain: string;
 }
 
+export interface UpdateDomainRequest {
+  domain?: string;
+}
+
 export interface CreateCertificateRequest {
   name: string;
   certificate: string;
   privateKey: string;
-  expiredAt: string;
+  expiresAt: string;
   issuer: string;
+  autoRenew?: boolean;
+}
+
+export interface UpdateCertificateRequest {
+  name?: string;
+  certificate?: string;
+  privateKey?: string;
+  expiresAt?: string;
+  issuer?: string;
   autoRenew?: boolean;
 }
 
@@ -115,6 +128,16 @@ export interface CreateHttpServerRequest {
   listeningPortId: number;
   name: string;
   additionalConfig?: string;
+  accessLogPath?: string;
+  errorLogPath?: string;
+  logLevel?: string;
+}
+
+export interface UpdateHttpServerRequest {
+  listeningPortId?: number;
+  name?: string;
+  additionalConfig?: string;
+  status?: "active" | "inactive";
   accessLogPath?: string;
   errorLogPath?: string;
   logLevel?: string;

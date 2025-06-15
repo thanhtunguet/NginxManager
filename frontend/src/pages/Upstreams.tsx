@@ -14,12 +14,14 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import api from "../services/api";
-import { Upstream, CreateUpstreamRequest } from "../types";
+import { Upstream, CreateUpstreamRequest, UpdateUpstreamRequest } from "../types";
 
 const { Option } = Select;
 
 const Upstreams: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingUpstream, setEditingUpstream] = useState<Upstream | null>(null);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -44,6 +46,22 @@ const Upstreams: React.FC = () => {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: number; data: UpdateUpstreamRequest }) =>
+      api.patch(`/upstreams/${id}`, data),
+    onSuccess: () => {
+      message.success("Upstream updated successfully");
+      setIsModalVisible(false);
+      setIsEditMode(false);
+      setEditingUpstream(null);
+      form.resetFields();
+      queryClient.invalidateQueries({ queryKey: ["upstreams"] });
+    },
+    onError: () => {
+      message.error("Failed to update upstream");
+    },
+  });
+
   const deleteMutation = useMutation({
     mutationFn: (id: number) => api.delete(`/upstreams/${id}`),
     onSuccess: () => {
@@ -56,17 +74,41 @@ const Upstreams: React.FC = () => {
   });
 
   const handleCreate = () => {
+    setIsEditMode(false);
+    setEditingUpstream(null);
     setIsModalVisible(true);
+    form.resetFields();
+  };
+
+  const handleEdit = (upstream: Upstream) => {
+    setIsEditMode(true);
+    setEditingUpstream(upstream);
+    setIsModalVisible(true);
+    form.setFieldsValue({
+      name: upstream.name,
+      server: upstream.server,
+      keepAlive: upstream.keepAlive,
+      status: upstream.status,
+      healthCheckPath: upstream.healthCheckPath,
+      healthCheckInterval: upstream.healthCheckInterval,
+      maxFails: upstream.maxFails,
+    });
   };
 
   const handleModalOk = () => {
     form.validateFields().then((values) => {
-      createMutation.mutate(values);
+      if (isEditMode && editingUpstream) {
+        updateMutation.mutate({ id: editingUpstream.id, data: values });
+      } else {
+        createMutation.mutate(values);
+      }
     });
   };
 
   const handleModalCancel = () => {
     setIsModalVisible(false);
+    setIsEditMode(false);
+    setEditingUpstream(null);
     form.resetFields();
   };
 
@@ -118,7 +160,7 @@ const Upstreams: React.FC = () => {
           <Button
             type="link"
             icon={<EditOutlined />}
-            onClick={() => console.log("Edit", record.id)}
+            onClick={() => handleEdit(record)}
           >
             Edit
           </Button>
@@ -164,11 +206,11 @@ const Upstreams: React.FC = () => {
       />
 
       <Modal
-        title="Create New Upstream"
+        title={isEditMode ? "Edit Upstream" : "Create New Upstream"}
         open={isModalVisible}
         onOk={handleModalOk}
         onCancel={handleModalCancel}
-        confirmLoading={createMutation.isPending}
+        confirmLoading={createMutation.isPending || updateMutation.isPending}
         width={600}
       >
         <Form
@@ -226,6 +268,15 @@ const Upstreams: React.FC = () => {
           <Form.Item name="maxFails" label="Max Fails">
             <InputNumber min={1} max={10} style={{ width: "100%" }} />
           </Form.Item>
+
+          {isEditMode && (
+            <Form.Item name="status" label="Status">
+              <Select>
+                <Option value="active">Active</Option>
+                <Option value="inactive">Inactive</Option>
+              </Select>
+            </Form.Item>
+          )}
         </Form>
       </Modal>
     </div>

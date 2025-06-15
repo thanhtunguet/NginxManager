@@ -53,25 +53,26 @@ Defines IP-based access control rules that translate to NGINX `allow`/`deny` dir
 The configuration follows NGINX's hierarchical structure: HttpServer (server block) contains Location blocks (location contexts), with global entities (Upstream, Certificate, Domain) referenced as needed.
 
 ## Technology Stack
-- **Backend**: Rust + Axum framework + SQLx ORM
+- **Backend**: NestJS + TypeScript + TypeORM
 - **Frontend**: Vite + React + TypeScript + Ant Design
 - **Database**: MySQL
-- **Additional**: Docker for containerization, Serde for JSON serialization
+- **Additional**: Docker for containerization, JWT for authentication
 
 ## Project Structure
 ```
 nginx-manager/
-├── backend/                 # Rust backend
+├── backend/                 # NestJS backend
 │   ├── src/
-│   │   ├── handlers/        # HTTP request handlers
+│   │   ├── controllers/     # HTTP request controllers
 │   │   ├── services/        # Business logic
-│   │   ├── models/          # Database models
+│   │   ├── entities/        # TypeORM entities
 │   │   ├── middleware/      # Custom middleware
 │   │   ├── utils/           # Utility functions
 │   │   ├── config/          # Configuration management
-│   │   └── main.rs
+│   │   └── main.ts
 │   ├── migrations/          # Database migrations
-│   ├── Cargo.toml
+│   ├── package.json
+│   ├── tsconfig.json
 │   └── Dockerfile
 ├── frontend/                # React frontend
 │   ├── src/
@@ -92,34 +93,34 @@ nginx-manager/
 
 ## Phase 1: Foundation & Database Layer
 
-### 1.1 Rust Backend Project Initialization
-Establish Rust workspace with Axum web framework, SQLx for database operations, and Tokio for async runtime. Configure Cargo.toml with proper dependencies including serde for JSON serialization, tower for middleware, and anyhow for error handling.
+### 1.1 NestJS Backend Project Initialization
+Establish NestJS project with TypeScript, TypeORM for database operations, and proper decorators for dependency injection. Configure package.json with proper dependencies including class-validator for validation, JWT for authentication, and swagger for API documentation.
 
 ### 1.2 Database Schema Implementation
-Implement PostgreSQL schema with SQLx migrations. Design proper table relationships, constraints, and indexing. Use SQLx compile-time checked queries for type safety and performance.
+Implement MySQL schema with TypeORM migrations. Design proper table relationships, constraints, and indexing. Use TypeORM decorators for entity definitions and type safety.
 
 ### 1.3 Database Models and Repository Pattern
-Create Rust structs representing database entities with Serde serialization. Implement repository pattern for database operations with proper error handling and connection pooling.
+Create TypeScript classes representing database entities with TypeORM decorators. Implement repository pattern for database operations with proper error handling and connection pooling using NestJS providers.
 
 ### 1.4 Frontend Project Setup
 Initialize Vite React project with TypeScript and Ant Design. Configure build tools, development server, and proper TypeScript configuration for strict type checking.
 
-## Phase 2: Backend Architecture (Rust + Axum)
+## Phase 2: Backend Architecture (NestJS + TypeScript)
 
-### 2.1 RESTful API Design with Axum
-Design comprehensive REST API using Axum's routing system with proper HTTP status codes, error handling, and JSON response formatting. Implement standardized request/response patterns using Serde for serialization.
+### 2.1 RESTful API Design with NestJS
+Design comprehensive REST API using NestJS decorators and routing system with proper HTTP status codes, error handling, and JSON response formatting. Implement standardized request/response patterns using DTOs and class-validator.
 
 ### 2.2 Authentication & Authorization
-Implement JWT-based authentication using jsonwebtoken crate with role-based access control. Design middleware for authentication verification and permission checking using Tower middleware stack.
+Implement JWT-based authentication using Passport.js with role-based access control. Design guards for authentication verification and permission checking using NestJS guard system.
 
 ### 2.3 Business Logic Layer
-Create service layer for core business operations including NGINX configuration generation, certificate management, health checking, and deployment orchestration. Use Rust's type system for compile-time safety.
+Create service layer for core business operations including NGINX configuration generation, certificate management, health checking, and deployment orchestration. Use TypeScript's type system for compile-time safety.
 
 ### 2.4 Configuration Generation Engine
-Develop templating system using Rust's strong typing to transform database entities into valid NGINX configuration blocks. Handle server blocks, upstream definitions, location contexts, SSL settings, and proxy configurations with template engines like Tera or Handlebars.
+Develop templating system using TypeScript to transform database entities into valid NGINX configuration blocks. Handle server blocks, upstream definitions, location contexts, SSL settings, and proxy configurations with template engines like Handlebars or Mustache.
 
 ### 2.5 Validation & Testing Framework
-Implement NGINX configuration syntax validation by executing nginx -t command through Rust's std::process. Create configuration testing pipeline with proper error handling and async execution.
+Implement NGINX configuration syntax validation by executing nginx -t command through Node.js child_process. Create configuration testing pipeline with proper error handling and async execution using Jest testing framework.
 
 ## Phase 3: Frontend Architecture (React + Ant Design)
 

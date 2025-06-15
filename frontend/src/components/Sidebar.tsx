@@ -7,6 +7,7 @@ import {
   GlobalOutlined,
   SafetyCertificateOutlined,
   SettingOutlined,
+  FileTextOutlined,
 } from "@ant-design/icons";
 
 const { Sider } = Layout;
@@ -40,6 +41,11 @@ const Sidebar: React.FC = () => {
       key: "/certificates",
       icon: <SafetyCertificateOutlined />,
       label: "Certificates",
+    },
+    {
+      key: "/nginx-config",
+      icon: <FileTextOutlined />,
+      label: "NGINX Config",
     },
   ];
 
