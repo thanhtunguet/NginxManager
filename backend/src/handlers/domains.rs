@@ -1,10 +1,10 @@
 use axum::{
-    extract::{Path, State},
+    extract::State,
     http::StatusCode,
     Json,
 };
 use sqlx::MySqlPool;
-use crate::models::{Domain, CreateDomainRequest, UpdateDomainRequest};
+use crate::models::{Domain, CreateDomainRequest};
 
 pub async fn list_domains(
     State(pool): State<MySqlPool>,

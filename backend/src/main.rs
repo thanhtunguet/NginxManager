@@ -2,6 +2,7 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use sqlx::mysql::MySqlPoolOptions;
 use std::net::SocketAddr;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
@@ -25,6 +26,13 @@ async fn main() {
     // Load configuration
     let config = config::Config::load().expect("Failed to load configuration");
 
+    // Create the database pool
+    let pool = MySqlPoolOptions::new()
+        .max_connections(5)
+        .connect(&config.database.url)
+        .await
+        .expect("Failed to create database pool");
+
     // Build our application with a route
     let app = Router::new()
         .route("/health", get(health_check))
@@ -35,7 +43,8 @@ async fn main() {
         .route("/api/v1/domains", get(handlers::domains::list_domains))
         .route("/api/v1/domains", post(handlers::domains::create_domain))
         .route("/api/v1/certificates", get(handlers::certificates::list_certificates))
-        .route("/api/v1/certificates", post(handlers::certificates::create_certificate));
+        .route("/api/v1/certificates", post(handlers::certificates::create_certificate))
+        .with_state(pool);
 
     // Run it
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));

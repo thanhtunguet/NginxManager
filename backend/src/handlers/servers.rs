@@ -1,10 +1,10 @@
 use axum::{
-    extract::{Path, State},
+    extract::State,
     http::StatusCode,
     Json,
 };
 use sqlx::MySqlPool;
-use crate::models::{HttpServer, CreateHttpServerRequest, UpdateHttpServerRequest};
+use crate::models::{HttpServer, CreateHttpServerRequest};
 
 pub async fn list_servers(
     State(pool): State<MySqlPool>,

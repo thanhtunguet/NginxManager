@@ -1,10 +1,10 @@
 use axum::{
-    extract::{Path, State},
+    extract::State,
     http::StatusCode,
     Json,
 };
 use sqlx::MySqlPool;
-use crate::models::{Certificate, CreateCertificateRequest, UpdateCertificateRequest};
+use crate::models::{Certificate, CreateCertificateRequest};
 
 pub async fn list_certificates(
     State(pool): State<MySqlPool>,

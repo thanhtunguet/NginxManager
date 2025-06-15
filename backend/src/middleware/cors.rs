@@ -1,14 +1,13 @@
 use axum::{
-    extract::Request,
-    http::{header, Method},
+    http::{header, StatusCode, Request},
     middleware::Next,
     response::Response,
 };
 
-pub async fn cors_middleware(
-    request: Request,
-    next: Next,
-) -> Result<Response, axum::http::StatusCode> {
+pub async fn cors_middleware<B>(
+    request: Request<B>,
+    next: Next<B>,
+) -> Result<Response, StatusCode> {
     let mut response = next.run(request).await;
 
     // Add CORS headers

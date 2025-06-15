@@ -1,6 +1,5 @@
 use crate::models::{HttpServer, Upstream, Location, Domain, Certificate};
 use tera::{Tera, Context};
-use std::collections::HashMap;
 
 pub struct NginxConfigService {
     tera: Tera,

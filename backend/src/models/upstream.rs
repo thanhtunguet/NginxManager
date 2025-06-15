@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
-use chrono::{DateTime, Utc};
 
 #[derive(Debug, Serialize, Deserialize, FromRow)]
 pub struct Upstream {
@@ -14,7 +13,7 @@ pub struct Upstream {
     pub max_fails: u64,
 }
 
-#[derive(Debug, Serialize, Deserialize, sqlx::Type)]
+#[derive(Debug, Serialize, Deserialize, sqlx::Type, PartialEq)]
 #[sqlx(type_name = "ENUM('active', 'inactive')")]
 pub enum UpstreamStatus {
     Active,

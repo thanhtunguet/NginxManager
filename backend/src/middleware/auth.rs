@@ -1,6 +1,6 @@
 use axum::{
-    extract::{Request, State},
-    http::{header, StatusCode},
+    extract::State,
+    http::{header, StatusCode, Request},
     middleware::Next,
     response::Response,
 };
@@ -8,17 +8,17 @@ use jsonwebtoken::{decode, DecodingKey, Validation};
 use serde::{Deserialize, Serialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Claims {
     pub sub: String, // Subject (user ID)
     pub exp: usize,  // Expiration time
     pub iat: usize,  // Issued at
 }
 
-pub async fn auth_middleware(
+pub async fn auth_middleware<B>(
     State(config): State<crate::config::Config>,
-    mut request: Request,
-    next: Next,
+    mut request: Request<B>,
+    next: Next<B>,
 ) -> Result<Response, StatusCode> {
     let auth_header = request
         .headers()

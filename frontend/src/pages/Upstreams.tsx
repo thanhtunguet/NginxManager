@@ -56,7 +56,7 @@ const Upstreams: React.FC = () => {
     {
       title: "Actions",
       key: "actions",
-      render: (_, record: Upstream) => (
+      render: (_: any, record: Upstream) => (
         <Space size="middle">
           <Button
             type="link"

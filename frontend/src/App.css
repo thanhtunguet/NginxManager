@@ -36,4 +36,72 @@
 
 .read-the-docs {
   color: #888;
+}
+
+/* NGINX Manager specific styles */
+.nginx-manager-layout {
+  min-height: 100vh;
+}
+
+.nginx-manager-header {
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  padding: 0 24px;
+}
+
+.nginx-manager-content {
+  background: #fff;
+  margin: 24px 16px;
+  padding: 24px;
+  min-height: 280px;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.nginx-manager-sidebar {
+  background: #fff;
+  border-right: 1px solid #f0f0f0;
+}
+
+.nginx-manager-sidebar .ant-menu {
+  border-right: none;
+}
+
+.nginx-manager-sidebar .ant-menu-item {
+  margin: 4px 8px;
+  border-radius: 6px;
+}
+
+.nginx-manager-sidebar .ant-menu-item-selected {
+  background-color: #e6f7ff;
+  color: #1890ff;
+}
+
+.page-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.stats-card {
+  text-align: center;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.stats-card .ant-statistic-title {
+  font-size: 14px;
+  color: #8c8c8c;
+}
+
+.stats-card .ant-statistic-content {
+  font-size: 24px;
+  font-weight: 600;
 } 

@@ -1,5 +1,4 @@
-use validator::{Validate, ValidationError};
-use std::collections::HashMap;
+use validator::ValidationError;
 
 pub fn validate_domain(domain: &str) -> Result<(), ValidationError> {
     if domain.is_empty() {

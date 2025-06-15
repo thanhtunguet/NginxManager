@@ -13,12 +13,10 @@ const { Content } = Layout;
 
 function App() {
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout className="nginx-manager-layout">
       <Sidebar />
       <Layout>
-        <Content
-          style={{ margin: "24px 16px", padding: 24, background: "#fff" }}
-        >
+        <Content className="nginx-manager-content">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/upstreams" element={<Upstreams />} />

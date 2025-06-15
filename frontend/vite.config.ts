@@ -3,7 +3,12 @@ import react from "@vitejs/plugin-react";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react({
+      // // This is needed to fix the preamble detection issue
+      // fastRefresh: true,
+    }),
+  ],
   server: {
     port: 5173,
     proxy: {
@@ -16,5 +21,10 @@ export default defineConfig({
   build: {
     outDir: "dist",
     sourcemap: true,
+  },
+  resolve: {
+    alias: {
+      "@": "/src",
+    },
   },
 });

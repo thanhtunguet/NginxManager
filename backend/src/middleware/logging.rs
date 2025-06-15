@@ -1,15 +1,14 @@
 use axum::{
-    extract::Request,
-    http::StatusCode,
+    http::{StatusCode, Request},
     middleware::Next,
     response::Response,
 };
 use std::time::Instant;
 use tracing::info;
 
-pub async fn logging_middleware(
-    request: Request,
-    next: Next,
+pub async fn logging_middleware<B>(
+    request: Request<B>,
+    next: Next<B>,
 ) -> Result<Response, StatusCode> {
     let start = Instant::now();
     let method = request.method().clone();

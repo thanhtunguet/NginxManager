@@ -1,5 +1,5 @@
 use crate::models::Certificate;
-use chrono::{DateTime, Utc, Duration};
+use chrono::Utc;
 use std::path::Path;
 
 pub struct CertificateService;
