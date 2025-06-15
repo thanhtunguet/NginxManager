@@ -1,4 +1,4 @@
-import { IsNumber, IsEnum, IsOptional, IsBoolean, Min, Max } from 'class-validator';
+import { IsNumber, IsEnum, IsOptional, IsBoolean, IsString, Min, Max, MinLength, MaxLength } from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 
 export enum PortProtocol {
@@ -7,6 +7,12 @@ export enum PortProtocol {
 }
 
 export class CreateListeningPortDto {
+  @ApiProperty({ description: 'Name of the listening port', example: 'Main HTTP Port' })
+  @IsString()
+  @MinLength(2)
+  @MaxLength(255)
+  name: string;
+
   @ApiProperty({ description: 'Port number', minimum: 1, maximum: 65535 })
   @IsNumber()
   @Min(1)
@@ -33,6 +39,9 @@ export class UpdateListeningPortDto extends PartialType(CreateListeningPortDto) 
 export class ListeningPortResponseDto {
   @ApiProperty()
   id: number;
+
+  @ApiProperty()
+  name: string;
 
   @ApiProperty()
   port: number;

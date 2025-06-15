@@ -7,6 +7,7 @@ import Upstreams from "./pages/Upstreams";
 import Servers from "./pages/Servers";
 import Domains from "./pages/Domains";
 import Certificates from "./pages/Certificates";
+import ListeningPorts from "./pages/ListeningPorts";
 import NginxConfig from "./pages/NginxConfig";
 import "./App.css";
 
@@ -24,6 +25,7 @@ function App() {
             <Route path="/servers" element={<Servers />} />
             <Route path="/domains" element={<Domains />} />
             <Route path="/certificates" element={<Certificates />} />
+            <Route path="/listening-ports" element={<ListeningPorts />} />
             <Route path="/nginx-config" element={<NginxConfig />} />
           </Routes>
         </Content>
