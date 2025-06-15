@@ -1,5 +1,5 @@
 use axum::{
-    extract::State,
+    extract::{Path, State},
     http::StatusCode,
     Json,
 };
@@ -41,4 +41,21 @@ pub async fn create_domain(
     .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
     Ok(Json(domain))
+}
+
+pub async fn delete_domain(
+    State(pool): State<MySqlPool>,
+    Path(id): Path<u64>,
+) -> Result<StatusCode, StatusCode> {
+    let result = sqlx::query("DELETE FROM Domain WHERE id = ?")
+        .bind(id)
+        .execute(&pool)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    if result.rows_affected() == 0 {
+        return Err(StatusCode::NOT_FOUND);
+    }
+
+    Ok(StatusCode::NO_CONTENT)
 } 

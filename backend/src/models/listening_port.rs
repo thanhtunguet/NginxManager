@@ -5,13 +5,14 @@ use sqlx::FromRow;
 pub struct ListeningPort {
     pub id: u64,
     pub name: String,
-    pub port: u64,
+    pub port: u32,
+    pub created_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 #[derive(Debug, Deserialize)]
 pub struct CreateListeningPortRequest {
     pub name: String,
-    pub port: u64,
+    pub port: u32,
 }
 
 #[derive(Debug, Deserialize)]

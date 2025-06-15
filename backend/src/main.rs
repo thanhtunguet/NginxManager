@@ -1,5 +1,5 @@
 use axum::{
-    routing::{get, post},
+    routing::{get, post, delete},
     Router,
 };
 use sqlx::mysql::MySqlPoolOptions;
@@ -38,12 +38,17 @@ async fn main() {
         .route("/health", get(health_check))
         .route("/api/v1/upstreams", get(handlers::upstreams::list_upstreams))
         .route("/api/v1/upstreams", post(handlers::upstreams::create_upstream))
+        .route("/api/v1/upstreams/:id", delete(handlers::upstreams::delete_upstream))
         .route("/api/v1/servers", get(handlers::servers::list_servers))
         .route("/api/v1/servers", post(handlers::servers::create_server))
+        .route("/api/v1/servers/:id", delete(handlers::servers::delete_server))
         .route("/api/v1/domains", get(handlers::domains::list_domains))
         .route("/api/v1/domains", post(handlers::domains::create_domain))
+        .route("/api/v1/domains/:id", delete(handlers::domains::delete_domain))
         .route("/api/v1/certificates", get(handlers::certificates::list_certificates))
         .route("/api/v1/certificates", post(handlers::certificates::create_certificate))
+        .route("/api/v1/certificates/:id", delete(handlers::certificates::delete_certificate))
+        .route("/api/v1/listening-ports", get(handlers::listening_ports::list_listening_ports))
         .with_state(pool);
 
     // Run it
