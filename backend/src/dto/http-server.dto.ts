@@ -1,10 +1,18 @@
-import { IsString, IsNumber, IsEnum, IsOptional, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsOptional,
+  IsNotEmpty,
+  IsPositive,
+} from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { HttpServerStatus } from '../entities';
 
 export class CreateHttpServerDto {
   @ApiProperty({ description: 'Listening port ID' })
-  @IsNumber()
+  @IsNumber({}, { message: 'Listening port ID must be a valid number' })
+  @IsPositive({ message: 'Listening port ID must be a positive number' })
   listeningPortId: number;
 
   @ApiProperty({ description: 'Server name/identifier' })
@@ -12,7 +20,10 @@ export class CreateHttpServerDto {
   @IsNotEmpty()
   name: string;
 
-  @ApiProperty({ description: 'Additional NGINX configuration', required: false })
+  @ApiProperty({
+    description: 'Additional NGINX configuration',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   additionalConfig?: string;

@@ -57,6 +57,9 @@ export interface ListeningPort {
   id: number;
   name: string;
   port: number;
+  protocol: string;
+  ssl: boolean;
+  http2: boolean;
   createdAt?: string;
 }
 

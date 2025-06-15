@@ -105,10 +105,16 @@ const Servers: React.FC = () => {
 
   const handleModalOk = () => {
     form.validateFields().then((values) => {
+      // Ensure listeningPortId is a number
+      const formData = {
+        ...values,
+        listeningPortId: Number(values.listeningPortId),
+      };
+      
       if (isEditMode && editingServer) {
-        updateMutation.mutate({ id: editingServer.id, data: values });
+        updateMutation.mutate({ id: editingServer.id, data: formData });
       } else {
-        createMutation.mutate(values);
+        createMutation.mutate(formData);
       }
     });
   };
@@ -225,10 +231,12 @@ const Servers: React.FC = () => {
               { required: true, message: "Please select a listening port" },
             ]}
           >
-            <Select placeholder="Select a listening port">
+            <Select placeholder="Select a listening port" showSearch>
               {listeningPorts.map((port) => (
-                <Option key={port.id} value={port.id}>
-                  {port.name} (Port {port.port})
+                <Option key={port.id} value={Number(port.id)}>
+                  {port.name} - Port {port.port} ({port.protocol.toUpperCase()})
+                  {port.ssl && " SSL"}
+                  {port.http2 && " HTTP/2"}
                 </Option>
               ))}
             </Select>
