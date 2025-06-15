@@ -35,7 +35,7 @@ export const databaseConfig = registerAs(
       AccessRule,
     ],
     synchronize: true,
-    dropSchema: true,
+    dropSchema: false, // Changed from true to false to preserve data
     logging: process.env.NODE_ENV === 'development',
     autoLoadEntities: true,
   }),
