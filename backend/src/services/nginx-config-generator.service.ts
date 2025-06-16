@@ -22,10 +22,8 @@ import {
 @Injectable()
 export class NginxConfigGeneratorService {
   private templates: Map<string, HandlebarsTemplateDelegate> = new Map();
-  private readonly templatesPath = path.join(
-    __dirname,
-    '..',
-    '..',
+  private readonly templatesPath = path.resolve(
+    process.cwd(),
     'src',
     'templates',
   );
