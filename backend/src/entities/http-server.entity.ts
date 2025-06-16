@@ -58,15 +58,20 @@ export class HttpServer {
   @JoinColumn({ name: 'certificateId' })
   certificate: Certificate;
 
-  @OneToMany(() => Location, (location) => location.httpServer)
+  @OneToMany(() => Location, (location) => location.httpServer, {
+    cascade: ['remove'],
+  })
   locations: Location[];
 
-  @OneToMany(() => ConfigVersion, (configVersion) => configVersion.httpServer)
+  @OneToMany(() => ConfigVersion, (configVersion) => configVersion.httpServer, {
+    cascade: ['remove'],
+  })
   configVersions: ConfigVersion[];
 
   @OneToMany(
     () => ServerDomainMapping,
     (serverDomainMapping) => serverDomainMapping.httpServer,
+    { cascade: ['remove'] },
   )
   domainMappings: ServerDomainMapping[];
 }
