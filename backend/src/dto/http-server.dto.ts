@@ -5,9 +5,34 @@ import {
   IsOptional,
   IsNotEmpty,
   IsPositive,
+  IsArray,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { HttpServerStatus } from '../entities';
+import { LocationResponseDto } from './location.dto';
+
+export class CreateLocationForServerDto {
+  @ApiProperty({ description: 'Upstream ID' })
+  @IsNumber()
+  upstreamId: number;
+
+  @ApiProperty({ description: 'Location path pattern', default: '/' })
+  @IsString()
+  @IsNotEmpty()
+  path: string;
+
+  @ApiProperty({ description: 'Additional NGINX configuration', required: false })
+  @IsString()
+  @IsOptional()
+  additionalConfig?: string;
+
+  @ApiProperty({ description: 'Client max body size', default: '1m' })
+  @IsString()
+  @IsOptional()
+  clientMaxBodySize?: string;
+}
 
 export class CreateHttpServerDto {
   @ApiProperty({ description: 'Listening port ID' })
@@ -47,6 +72,17 @@ export class CreateHttpServerDto {
   @IsString()
   @IsOptional()
   logLevel?: string;
+
+  @ApiProperty({ 
+    description: 'Location blocks for this server',
+    type: [CreateLocationForServerDto],
+    required: false
+  })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateLocationForServerDto)
+  @IsOptional()
+  locations?: CreateLocationForServerDto[];
 }
 
 export class UpdateHttpServerDto extends PartialType(CreateHttpServerDto) {}
@@ -75,4 +111,7 @@ export class HttpServerResponseDto {
 
   @ApiProperty()
   logLevel: string;
+
+  @ApiProperty({ type: [LocationResponseDto] })
+  locations: LocationResponseDto[];
 }

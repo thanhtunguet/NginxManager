@@ -82,6 +82,11 @@ export class NginxConfigGeneratorService {
   }
 
   async generateServerBlocksOnly(): Promise<string> {
+    // Re-register partials to pick up any template changes
+    Handlebars.unregisterPartial('server');
+    this.registerPartial('server', 'server.hbs');
+    this.compileTemplate('main', 'main.hbs');
+    
     const upstreams = await this.upstreamRepository.find({
       where: { status: UpstreamStatus.ACTIVE },
     });
@@ -118,9 +123,10 @@ export class NginxConfigGeneratorService {
       where: { serverId: server.id, scope: AccessRuleScope.SERVER },
     });
 
-    const serverNames = server.domainMappings
-      .map((mapping) => mapping.domain.domain)
-      .join(' ');
+    // Use server name as fallback when no domain mappings exist
+    const serverNames = server.domainMappings.length > 0
+      ? server.domainMappings.map((mapping) => mapping.domain.domain).join(' ')
+      : server.name;
 
     const processedLocations = await Promise.all(
       server.locations.map((location) => this.processLocationData(location)),

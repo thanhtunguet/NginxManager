@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { HttpServer } from '../entities';
+import { HttpServer, Location } from '../entities';
 import { CreateHttpServerDto, UpdateHttpServerDto } from '../dto';
 
 @Injectable()
@@ -9,11 +9,41 @@ export class HttpServerService {
   constructor(
     @InjectRepository(HttpServer)
     private readonly httpServerRepository: Repository<HttpServer>,
+    @InjectRepository(Location)
+    private readonly locationRepository: Repository<Location>,
   ) {}
 
   async create(createHttpServerDto: CreateHttpServerDto): Promise<HttpServer> {
-    const httpServer = this.httpServerRepository.create(createHttpServerDto);
-    return await this.httpServerRepository.save(httpServer);
+    const { locations, ...serverData } = createHttpServerDto;
+    
+    // Create the server first
+    const httpServer = this.httpServerRepository.create(serverData);
+    const savedServer = await this.httpServerRepository.save(httpServer);
+    
+    // Create locations if provided
+    if (locations && locations.length > 0) {
+      const locationEntities = locations.map(locationData => 
+        this.locationRepository.create({
+          ...locationData,
+          serverId: savedServer.id,
+        })
+      );
+      await this.locationRepository.save(locationEntities);
+    } else {
+      // Create default root location if no locations provided
+      // Note: You'll need to set upstreamId when you have at least one upstream created
+      const defaultLocation = this.locationRepository.create({
+        serverId: savedServer.id,
+        path: '/',
+        upstreamId: 1, // Default upstream - should be configurable
+        additionalConfig: '',
+        clientMaxBodySize: '1m',
+      });
+      await this.locationRepository.save(defaultLocation);
+    }
+    
+    // Return server with locations
+    return await this.findOne(savedServer.id);
   }
 
   async findAll(): Promise<HttpServer[]> {

@@ -10,11 +10,15 @@ import {
   Input,
   Select,
   InputNumber,
+  Card,
+  Row,
+  Col,
+  Divider,
 } from "antd";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import api from "../services/api";
-import { HttpServer, CreateHttpServerRequest, UpdateHttpServerRequest, ListeningPort } from "../types";
+import { HttpServer, CreateHttpServerRequest, UpdateHttpServerRequest, ListeningPort, Upstream } from "../types";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -38,6 +42,14 @@ const Servers: React.FC = () => {
     queryKey: ["listening-ports"],
     queryFn: async () => {
       const response = await api.get("/listening-ports");
+      return response.data;
+    },
+  });
+
+  const { data: upstreams = [] } = useQuery<Upstream[]>({
+    queryKey: ["upstreams"],
+    queryFn: async () => {
+      const response = await api.get("/upstreams");
       return response.data;
     },
   });
@@ -87,6 +99,10 @@ const Servers: React.FC = () => {
     setEditingServer(null);
     setIsModalVisible(true);
     form.resetFields();
+    form.setFieldsValue({
+      logLevel: "info",
+      locations: [{ path: "/", upstreamId: undefined, clientMaxBodySize: "1m" }],
+    });
   };
 
   const handleEdit = (server: HttpServer) => {
@@ -100,15 +116,25 @@ const Servers: React.FC = () => {
       accessLogPath: server.accessLogPath,
       errorLogPath: server.errorLogPath,
       additionalConfig: server.additionalConfig,
+      locations: server.locations?.map(location => ({
+        upstreamId: location.upstreamId,
+        path: location.path,
+        additionalConfig: location.additionalConfig,
+        clientMaxBodySize: location.clientMaxBodySize,
+      })) || [],
     });
   };
 
   const handleModalOk = () => {
     form.validateFields().then((values) => {
-      // Ensure listeningPortId is a number
+      // Ensure listeningPortId is a number and upstreamId in locations are numbers
       const formData = {
         ...values,
         listeningPortId: Number(values.listeningPortId),
+        locations: values.locations?.map((location: any) => ({
+          ...location,
+          upstreamId: Number(location.upstreamId),
+        })) || [],
       };
       
       if (isEditMode && editingServer) {
@@ -215,13 +241,14 @@ const Servers: React.FC = () => {
         onOk={handleModalOk}
         onCancel={handleModalCancel}
         confirmLoading={createMutation.isPending || updateMutation.isPending}
-        width={600}
+        width={800}
       >
         <Form
           form={form}
           layout="vertical"
           initialValues={{
             logLevel: "info",
+            locations: [{ path: "/", upstreamId: undefined, clientMaxBodySize: "1m" }],
           }}
         >
           <Form.Item
@@ -273,6 +300,90 @@ const Servers: React.FC = () => {
               placeholder="Additional NGINX configuration..."
             />
           </Form.Item>
+
+          <Divider>Location Blocks</Divider>
+          
+          <Form.List 
+            name="locations"
+            initialValue={[{ path: "/", upstreamId: undefined, clientMaxBodySize: "1m" }]}
+          >
+            {(fields, { add, remove }) => (
+              <>
+                {fields.map(({ key, name, ...restField }) => (
+                  <Card 
+                    key={key} 
+                    size="small" 
+                    title={`Location Block ${name + 1}`}
+                    extra={
+                      fields.length > 1 && (
+                        <Button 
+                          type="link" 
+                          danger 
+                          onClick={() => remove(name)}
+                        >
+                          Remove
+                        </Button>
+                      )
+                    }
+                    style={{ marginBottom: 16 }}
+                  >
+                    <Row gutter={16}>
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'path']}
+                          label="Path"
+                          rules={[{ required: true, message: 'Please enter location path' }]}
+                        >
+                          <Input placeholder="e.g., /, /api, /static" />
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'upstreamId']}
+                          label="Upstream"
+                          rules={[{ required: true, message: 'Please select an upstream' }]}
+                        >
+                          <Select placeholder="Select upstream">
+                            {upstreams.map((upstream) => (
+                              <Option key={upstream.id} value={upstream.id}>
+                                {upstream.name} ({upstream.server})
+                              </Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                      <Col span={8}>
+                        <Form.Item
+                          {...restField}
+                          name={[name, 'clientMaxBodySize']}
+                          label="Max Body Size"
+                        >
+                          <Input placeholder="e.g., 1m, 10m, 100m" />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                    <Form.Item
+                      {...restField}
+                      name={[name, 'additionalConfig']}
+                      label="Additional Location Config"
+                    >
+                      <TextArea
+                        rows={2}
+                        placeholder="Additional NGINX location configuration..."
+                      />
+                    </Form.Item>
+                  </Card>
+                ))}
+                <Form.Item>
+                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                    Add Location Block
+                  </Button>
+                </Form.Item>
+              </>
+            )}
+          </Form.List>
         </Form>
       </Modal>
     </div>

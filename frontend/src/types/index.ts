@@ -38,6 +38,7 @@ export interface HttpServer {
   accessLogPath: string;
   errorLogPath: string;
   logLevel: string;
+  locations?: Location[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -127,6 +128,13 @@ export interface UpdateCertificateRequest {
   autoRenew?: boolean;
 }
 
+export interface CreateLocationForServerRequest {
+  upstreamId: number;
+  path: string;
+  additionalConfig?: string;
+  clientMaxBodySize?: string;
+}
+
 export interface CreateHttpServerRequest {
   listeningPortId: number;
   name: string;
@@ -134,6 +142,7 @@ export interface CreateHttpServerRequest {
   accessLogPath?: string;
   errorLogPath?: string;
   logLevel?: string;
+  locations?: CreateLocationForServerRequest[];
 }
 
 export interface UpdateHttpServerRequest {

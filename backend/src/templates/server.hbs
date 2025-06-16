@@ -1,6 +1,6 @@
 server {
     listen {{listeningPort.port}}{{#if listeningPort.ssl}} ssl{{/if}}{{#if listeningPort.http2}} http2{{/if}};
-    server_name {{#if serverNames}}{{serverNames}}{{else}}_{{/if}};
+    server_name {{#if serverNames}}{{serverNames}}{{else}}{{name}}{{/if}};
     
     access_log {{accessLogPath}};
     error_log {{errorLogPath}} {{logLevel}};
