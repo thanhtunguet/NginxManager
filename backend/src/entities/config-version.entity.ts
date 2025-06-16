@@ -1,4 +1,10 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  ManyToOne,
+  JoinColumn,
+} from 'typeorm';
 import { HttpServer } from './http-server.entity';
 
 @Entity('ConfigVersion')
@@ -6,7 +12,7 @@ export class ConfigVersion {
   @PrimaryGeneratedColumn({ type: 'bigint', unsigned: true })
   id: number;
 
-  @Column({ type: 'bigint', unsigned: true })
+  @Column({ type: 'bigint', unsigned: true, nullable: true })
   serverId: number;
 
   @Column({ type: 'mediumtext' })
@@ -18,7 +24,9 @@ export class ConfigVersion {
   @Column({ type: 'boolean' })
   isActive: boolean;
 
-  @ManyToOne(() => HttpServer, (httpServer) => httpServer.configVersions)
+  @ManyToOne(() => HttpServer, (httpServer) => httpServer.configVersions, {
+    nullable: true,
+  })
   @JoinColumn({ name: 'serverId' })
   httpServer: HttpServer;
 }
