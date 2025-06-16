@@ -1,10 +1,10 @@
 import {
-  Entity,
-  PrimaryGeneratedColumn,
   Column,
+  Entity,
+  JoinColumn,
   ManyToOne,
   OneToMany,
-  JoinColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 import { ListeningPort } from './listening-port.entity';
 import { Location } from './location.entity';

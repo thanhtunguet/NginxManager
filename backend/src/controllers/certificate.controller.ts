@@ -1,20 +1,20 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  ParseIntPipe,
+  Get,
   HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CertificateService } from '../services/certificate.service';
 import {
+  CertificateResponseDto,
   CreateCertificateDto,
   UpdateCertificateDto,
-  CertificateResponseDto,
 } from '../dto';
 
 @ApiTags('certificates')

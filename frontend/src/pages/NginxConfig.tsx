@@ -1,29 +1,29 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Card,
+  Alert,
   Button,
-  Typography,
-  Space,
-  message,
-  Row,
+  Card,
   Col,
   Collapse,
-  Modal,
-  Tag,
-  Spin,
   Input,
-  Alert,
   List,
+  message,
+  Modal,
+  Row,
+  Space,
+  Spin,
+  Tag,
   Tooltip,
+  Typography,
 } from "antd";
 import {
-  EyeOutlined,
-  DownloadOutlined,
-  EditOutlined,
-  SaveOutlined,
-  ReloadOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  EyeOutlined,
+  ReloadOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import NginxConfigEditor from "../components/NginxConfigEditor";
@@ -41,7 +41,7 @@ interface ValidationResult {
 interface ConfigVersion {
   id: number;
   config: string;
-  serverId?: number;
+  serverId?: string;
   name: string;
   createdAt: string;
   isActive: boolean;
@@ -75,7 +75,7 @@ const NginxConfig: React.FC = () => {
     }
   };
 
-  const generateServerConfig = async (serverId: number) => {
+  const generateServerConfig = async (serverId: string) => {
     setLoading(true);
     try {
       const response = await axios.get(
@@ -155,7 +155,7 @@ const NginxConfig: React.FC = () => {
     }
   };
 
-  const downloadServerConfig = async (serverId: number) => {
+  const downloadServerConfig = async (serverId: string) => {
     try {
       const response = await axios.get(
         `${API_BASE_URL}/nginx-config/download/server/${serverId}`,
@@ -269,8 +269,7 @@ const NginxConfig: React.FC = () => {
             <Button
               icon={<ReloadOutlined />}
               onClick={() =>
-                selectedServerId &&
-                generateServerConfig(parseInt(selectedServerId))
+                selectedServerId && generateServerConfig(selectedServerId)
               }
               disabled={loading || !selectedServerId}
             >

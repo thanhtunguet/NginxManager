@@ -1,16 +1,16 @@
 import {
+  Body,
   Controller,
   Get,
-  Post,
+  HttpStatus,
   Param,
   ParseIntPipe,
-  HttpStatus,
-  Res,
-  Query,
-  Body,
+  Post,
   Put,
+  Query,
+  Res,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { NginxConfigGeneratorService } from '../services/nginx-config-generator.service';
 
@@ -87,7 +87,7 @@ export class NginxConfigController {
   async validateConfig() {
     const config = await this.nginxConfigGeneratorService.generateFullConfig();
     const validation =
-      await this.nginxConfigGeneratorService.validateConfig(config);
+       this.nginxConfigGeneratorService.validateConfig(config);
     return {
       ...validation,
       validatedAt: new Date().toISOString(),
@@ -111,7 +111,7 @@ export class NginxConfigController {
       : await this.nginxConfigGeneratorService.generateFullConfig();
 
     const savedVersion =
-      await this.nginxConfigGeneratorService.saveConfigVersion(
+       await this.nginxConfigGeneratorService.saveConfigVersion(
         config,
         serverId,
         name,

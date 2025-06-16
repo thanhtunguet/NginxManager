@@ -1,17 +1,17 @@
 import { registerAs } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import {
-  Upstream,
-  Domain,
+  AccessRule,
   Certificate,
   CertificateDomainMapping,
-  ListeningPort,
-  HttpServer,
-  ServerDomainMapping,
-  Location,
   ConfigVersion,
-  AccessRule,
+  Domain,
+  HttpServer,
+  ListeningPort,
+  Location,
   NginxSettings,
+  ServerDomainMapping,
+  Upstream,
 } from '../entities';
 
 export const databaseConfig = registerAs(

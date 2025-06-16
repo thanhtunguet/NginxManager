@@ -1,13 +1,13 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  HttpStatus,
+  Controller,
   Delete,
+  Get,
+  HttpStatus,
   Param,
+  Post,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NginxSettingsService } from '../services/nginx-settings.service';
 
 @ApiTags('nginx-settings')

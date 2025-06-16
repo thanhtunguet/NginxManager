@@ -1,11 +1,11 @@
 import {
-  IsString,
-  IsEnum,
-  IsOptional,
-  IsNotEmpty,
   IsArray,
-  ValidateNested,
+  IsEnum,
+  IsNotEmpty,
   IsNumberString,
+  IsOptional,
+  IsString,
+  ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, PartialType } from '@nestjs/swagger';

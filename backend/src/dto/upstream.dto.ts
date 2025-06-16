@@ -1,11 +1,11 @@
 import {
-  IsString,
-  IsNumber,
   IsEnum,
-  IsOptional,
   IsNotEmpty,
-  Min,
+  IsNumber,
+  IsOptional,
+  IsString,
   Max,
+  Min,
 } from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { UpstreamStatus } from '../entities';

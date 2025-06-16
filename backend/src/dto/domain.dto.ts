@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, Matches } from 'class-validator';
+import { IsNotEmpty, IsString, Matches } from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 
 export class CreateDomainDto {

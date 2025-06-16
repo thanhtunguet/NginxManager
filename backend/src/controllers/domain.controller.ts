@@ -1,17 +1,17 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  ParseIntPipe,
+  Get,
   HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DomainService } from '../services/domain.service';
-import { CreateDomainDto, UpdateDomainDto, DomainResponseDto } from '../dto';
+import { CreateDomainDto, DomainResponseDto, UpdateDomainDto } from '../dto';
 
 @ApiTags('domains')
 @Controller('api/v1/domains')

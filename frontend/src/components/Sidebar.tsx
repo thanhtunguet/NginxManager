@@ -57,7 +57,7 @@ const Sidebar: React.FC = () => {
     {
       key: "/nginx-settings",
       icon: <ToolOutlined />,
-      label: "NGINX Service Settings",
+      label: "Service Settings",
     },
   ];
 

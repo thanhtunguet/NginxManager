@@ -1,39 +1,39 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import {
-  Upstream,
-  Domain,
+  AccessRule,
   Certificate,
   CertificateDomainMapping,
-  ListeningPort,
-  HttpServer,
-  ServerDomainMapping,
-  Location,
   ConfigVersion,
-  AccessRule,
+  Domain,
+  HttpServer,
+  ListeningPort,
+  Location,
   NginxSettings,
+  ServerDomainMapping,
+  Upstream,
 } from '../entities';
 import {
-  UpstreamService,
-  DomainService,
-  CertificateService,
-  ListeningPortService,
-  HttpServerService,
-  LocationService,
   AccessRuleService,
+  CertificateService,
+  DomainService,
+  HttpServerService,
+  ListeningPortService,
+  LocationService,
   NginxConfigGeneratorService,
   NginxSettingsService,
+  UpstreamService,
 } from '../services';
 import {
-  UpstreamController,
-  DomainController,
+  AccessRuleController,
   CertificateController,
+  DomainController,
   HttpServerController,
   ListeningPortController,
   LocationController,
-  AccessRuleController,
   NginxConfigController,
   NginxSettingsController,
+  UpstreamController,
 } from '../controllers';
 
 @Module({

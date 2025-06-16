@@ -1,10 +1,4 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  OneToMany,
-  ManyToMany,
-} from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { CertificateDomainMapping } from './certificate-domain-mapping.entity';
 import { ServerDomainMapping } from './server-domain-mapping.entity';
 

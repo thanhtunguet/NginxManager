@@ -1,6 +1,6 @@
-import { IsString, IsNumber, IsEnum, IsOptional, IsIP } from 'class-validator';
+import { IsEnum, IsIP, IsNumber, IsOptional, IsString } from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { AccessRuleType, AccessRuleScope } from '../entities';
+import { AccessRuleScope, AccessRuleType } from '../entities';
 
 export class CreateAccessRuleDto {
   @ApiProperty({ description: 'IP address or CIDR block' })

@@ -1,17 +1,17 @@
 server {
-    listen {{listeningPort.port}}{{#if listeningPort.ssl}} ssl{{/if}}{{#if listeningPort.http2}} http2{{/if}};
-    server_name {{#if serverNames}}{{serverNames}}{{else}}{{name}}{{/if}};
-    
-    access_log {{accessLogPath}};
-    error_log {{errorLogPath}} {{logLevel}};
+listen {{listeningPort.port}}{{#if listeningPort.ssl}} ssl{{/if}}{{#if listeningPort.http2}} http2{{/if}};
+server_name {{#if serverNames}}{{serverNames}}{{else}}{{name}}{{/if}};
+
+access_log {{accessLogPath}};
+error_log {{errorLogPath}} {{logLevel}};
 
 {{#if listeningPort.ssl}}
-{{#if sslConfig}}
-{{sslConfig}}
-{{else}}
-    # SSL configuration required but no certificate configured
-    return 444;
-{{/if}}
+    {{#if sslConfig}}
+        {{sslConfig}}
+    {{else}}
+        # SSL configuration required but no certificate configured
+        return 444;
+    {{/if}}
 {{/if}}
 
 {{#each accessRules}}
@@ -23,7 +23,7 @@ server {
 
 {{#each locations}}
 
-{{> location this}}
+    {{> location this}}
 
 {{/each}}
 {{#if additionalConfig}}

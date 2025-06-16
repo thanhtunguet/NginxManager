@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
-  Card,
   Button,
-  Typography,
-  Input,
-  Form,
-  Space,
-  message,
-  Row,
+  Card,
   Col,
   Divider,
+  Form,
+  Input,
+  message,
   Modal,
+  Row,
+  Space,
+  Typography,
 } from "antd";
 import {
-  SaveOutlined,
-  ReloadOutlined,
-  PlayCircleOutlined,
-  ExperimentOutlined,
   ExclamationCircleOutlined,
+  ExperimentOutlined,
+  PlayCircleOutlined,
+  ReloadOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import NginxConfigEditor from "../components/NginxConfigEditor";
@@ -233,6 +233,58 @@ const NginxServiceSettings: React.FC = () => {
           </Col>
 
           <Col span={12}>
+            <Card
+              title="SSL Certificates Path"
+              style={{ marginBottom: "24px" }}
+            >
+              <Form.Item
+                name="sslCertificatesPath"
+                label="Path to SSL certificates"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter the SSL certificates path",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="/etc/nginx/ssl/certs"
+                  style={{ fontFamily: "monospace" }}
+                />
+              </Form.Item>
+              <Text type="secondary">
+                This is the path where SSL certificates are stored.
+              </Text>
+            </Card>
+          </Col>
+
+          <Col span={12}>
+            <Card
+              title="SSL Private Keys Path"
+              style={{ marginBottom: "24px" }}
+            >
+              <Form.Item
+                name="sslPrivateKeysPath"
+                label="Path to SSL private keys"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter the SSL private keys path",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="/etc/nginx/ssl/private"
+                  style={{ fontFamily: "monospace" }}
+                />
+              </Form.Item>
+              <Text type="secondary">
+                This is the path where SSL private keys are stored.
+              </Text>
+            </Card>
+          </Col>
+
+          <Col span={12}>
             <Card title="Test Command" style={{ marginBottom: "24px" }}>
               <Form.Item
                 name="testCommand"
@@ -293,57 +345,7 @@ const NginxServiceSettings: React.FC = () => {
             </Card>
           </Col>
 
-          <Col span={24}>
-            <Card
-              title="SSL Certificates Path"
-              style={{ marginBottom: "24px" }}
-            >
-              <Form.Item
-                name="sslCertificatesPath"
-                label="Path to SSL certificates"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter the SSL certificates path",
-                  },
-                ]}
-              >
-                <Input
-                  placeholder="/etc/nginx/ssl/certs"
-                  style={{ fontFamily: "monospace" }}
-                />
-              </Form.Item>
-              <Text type="secondary">
-                This is the path where SSL certificates are stored.
-              </Text>
-            </Card>
-          </Col>
-
-          <Col span={24}>
-            <Card
-              title="SSL Private Keys Path"
-              style={{ marginBottom: "24px" }}
-            >
-              <Form.Item
-                name="sslPrivateKeysPath"
-                label="Path to SSL private keys"
-                rules={[
-                  {
-                    required: true,
-                    message: "Please enter the SSL private keys path",
-                  },
-                ]}
-              >
-                <Input
-                  placeholder="/etc/nginx/ssl/private"
-                  style={{ fontFamily: "monospace" }}
-                />
-              </Form.Item>
-              <Text type="secondary">
-                This is the path where SSL private keys are stored.
-              </Text>
-            </Card>
-          </Col>
+          
         </Row>
 
         <Divider />

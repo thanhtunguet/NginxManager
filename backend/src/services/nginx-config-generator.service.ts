@@ -14,9 +14,9 @@ import {
   HttpServerStatus,
   ListeningPort,
   Location,
+  NginxSettings,
   Upstream,
   UpstreamStatus,
-  NginxSettings,
 } from '../entities';
 
 @Injectable()
@@ -123,7 +123,12 @@ export class NginxConfigGeneratorService {
     return this.formatNginxConfig(rawConfig);
   }
 
-  private async processServerData(server: HttpServer): Promise<any> {
+  private async processServerData(server: HttpServer): Promise<{
+    serverNames: string;
+    accessRules: AccessRule[];
+    locations: any[];
+    sslConfig: string | null;
+  }> {
     const accessRules = await this.accessRuleRepository.find({
       where: { serverId: server.id, scope: AccessRuleScope.SERVER },
     });
@@ -332,7 +337,14 @@ export class NginxConfigGeneratorService {
     config: string,
     serverId?: number,
     name?: string,
-  ): Promise<any> {
+  ): Promise<{
+    id: number;
+    config: string;
+    serverId?: number;
+    name: string;
+    createdAt: Date;
+    isActive: boolean;
+  }> {
     // Deactivate previous active versions for this server
     if (serverId) {
       await this.configVersionRepository.update(
@@ -352,7 +364,11 @@ export class NginxConfigGeneratorService {
     return await this.configVersionRepository.save(configVersion);
   }
 
-  async updateConfigVersionName(id: number, name: string): Promise<any> {
+  async updateConfigVersionName(id: number, name: string): Promise<{
+    id: number;
+    name: string;
+    updatedAt?: Date;
+  }> {
     const configVersion = await this.configVersionRepository.findOne({
       where: { id },
     });

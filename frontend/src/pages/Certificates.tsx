@@ -1,28 +1,33 @@
 import React, { useState } from "react";
 import {
-  Table,
   Button,
-  Tag,
-  Space,
-  message,
-  Modal,
+  DatePicker,
   Form,
   Input,
-  DatePicker,
+  message,
+  Modal,
+  Space,
   Switch,
+  Table,
+  Tag,
 } from "antd";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { DeleteOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import api from "../services/api";
-import { Certificate, CreateCertificateRequest, UpdateCertificateRequest } from "../types";
+import {
+  Certificate,
+  CreateCertificateRequest,
+  UpdateCertificateRequest,
+} from "../types";
 
 const { TextArea } = Input;
 
 const Certificates: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
-  const [editingCertificate, setEditingCertificate] = useState<Certificate | null>(null);
+  const [editingCertificate, setEditingCertificate] =
+    useState<Certificate | null>(null);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -49,8 +54,13 @@ const Certificates: React.FC = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: UpdateCertificateRequest }) =>
-      api.patch(`/certificates/${id}`, data),
+    mutationFn: ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: UpdateCertificateRequest;
+    }) => api.patch(`/certificates/${id}`, data),
     onSuccess: () => {
       message.success("Certificate updated successfully");
       setIsModalVisible(false);
@@ -65,7 +75,7 @@ const Certificates: React.FC = () => {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: number) => api.delete(`/certificates/${id}`),
+    mutationFn: (id: string) => api.delete(`/certificates/${id}`),
     onSuccess: () => {
       message.success("Certificate deleted successfully");
       queryClient.invalidateQueries({ queryKey: ["certificates"] });
@@ -108,7 +118,7 @@ const Certificates: React.FC = () => {
         issuer: values.issuer,
         autoRenew: values.autoRenew,
       };
-      
+
       if (isEditMode && editingCertificate) {
         updateMutation.mutate({ id: editingCertificate.id, data: formData });
       } else {
@@ -124,7 +134,7 @@ const Certificates: React.FC = () => {
     form.resetFields();
   };
 
-  const handleDelete = (id: number) => {
+  const handleDelete = (id: string) => {
     Modal.confirm({
       title: "Are you sure you want to delete this certificate?",
       content: "This action cannot be undone.",
@@ -151,15 +161,15 @@ const Certificates: React.FC = () => {
       dataIndex: "expiresAt",
       key: "expiresAt",
       render: (date: string) => {
-        if (!date) return 'N/A';
+        if (!date) return "N/A";
         try {
-          return new Date(date).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric'
+          return new Date(date).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
           });
         } catch (error) {
-          return 'Invalid Date';
+          return "Invalid Date";
         }
       },
     },

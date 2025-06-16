@@ -1,20 +1,20 @@
 import {
-  Controller,
-  Get,
-  Post,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  ParseIntPipe,
+  Get,
   HttpStatus,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { LocationService } from '../services/location.service';
 import {
   CreateLocationDto,
-  UpdateLocationDto,
   LocationResponseDto,
+  UpdateLocationDto,
 } from '../dto';
 
 @ApiTags('locations')
