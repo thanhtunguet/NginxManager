@@ -6,3 +6,4 @@ export { HttpServerService } from './http-server.service';
 export { LocationService } from './location.service';
 export { AccessRuleService } from './access-rule.service';
 export { NginxConfigGeneratorService } from './nginx-config-generator.service';
+export { NginxSettingsService } from './nginx-settings.service';

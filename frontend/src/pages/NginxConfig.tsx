@@ -1,35 +1,34 @@
+import React, { useState, useEffect } from "react";
 import {
-  CheckCircleOutlined,
-  CloseCircleOutlined,
-  DownloadOutlined,
-  EditOutlined,
-  EyeOutlined,
-  ReloadOutlined,
-  SaveOutlined,
-} from "@ant-design/icons";
-import {
-  Alert,
-  Button,
   Card,
+  Button,
+  Typography,
+  Space,
+  message,
+  Row,
   Col,
   Collapse,
-  Input,
-  List,
-  message,
   Modal,
-  Row,
-  Space,
-  Spin,
   Tag,
+  Spin,
+  Input,
+  Alert,
+  List,
   Tooltip,
-  Typography,
 } from "antd";
+import {
+  EyeOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  SaveOutlined,
+  ReloadOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+} from "@ant-design/icons";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
 import NginxConfigEditor from "../components/NginxConfigEditor";
 
 const { Title, Text } = Typography;
-const { Panel } = Collapse;
 
 const API_BASE_URL = "http://localhost:3000/api/v1";
 
@@ -259,7 +258,9 @@ const NginxConfig: React.FC = () => {
             <Input
               placeholder="Server ID (optional)"
               value={selectedServerId}
-              onChange={(e) => setSelectedServerId(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setSelectedServerId(e.target.value)
+              }
               style={{ width: 150 }}
             />
           </Col>
@@ -281,7 +282,9 @@ const NginxConfig: React.FC = () => {
             <Input
               placeholder="Configuration name"
               value={configName}
-              onChange={(e) => setConfigName(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setConfigName(e.target.value)
+              }
               style={{ width: 200 }}
             />
           </Col>
@@ -361,109 +364,128 @@ const NginxConfig: React.FC = () => {
 
       {/* Configuration Display */}
       {config && (
-        <Collapse defaultActiveKey={["1"]} style={{ marginBottom: "24px" }}>
-          <Panel header="Generated Configuration" key="1">
-            <div style={{ color: "#888", fontStyle: "italic" }}>
-              Click <EyeOutlined /> Preview to view configuration.
-            </div>
-          </Panel>
-        </Collapse>
+        <Collapse
+          defaultActiveKey={["1"]}
+          style={{ marginBottom: "24px" }}
+          items={[
+            {
+              key: "1",
+              label: "Generated Configuration",
+              children: (
+                <div style={{ color: "#888", fontStyle: "italic" }}>
+                  Click <EyeOutlined /> Preview to view configuration.
+                </div>
+              ),
+            },
+          ]}
+        />
       )}
 
       {/* Configuration Versions */}
       {versions.length > 0 && (
-        <Collapse style={{ marginBottom: "24px" }}>
-          <Panel header={`Configuration Versions (${versions.length})`} key="1">
-            <List
-              dataSource={versions}
-              renderItem={(version, index) => (
-                <List.Item
-                  actions={[
-                    <Tooltip title="Rename">
-                      <Button
-                        type="link"
-                        icon={<EditOutlined />}
-                        onClick={() => startEditingName(version)}
-                      />
-                    </Tooltip>,
-                    <Tooltip title="Load this version">
-                      <Button
-                        type="link"
-                        icon={<ReloadOutlined />}
-                        onClick={() => {
-                          setConfig(version.config);
-                          setIsEditable(false);
-                        }}
-                      />
-                    </Tooltip>,
-                    <Tooltip title="Preview this version">
-                      <Button
-                        type="link"
-                        icon={<EyeOutlined />}
-                        onClick={() => {
-                          setConfig(version.config);
-                          setIsEditable(false);
-                          setPreviewOpen(true);
-                        }}
-                      />
-                    </Tooltip>,
-                    version.serverId && (
-                      <Tooltip title="Download server config">
-                        <Button
-                          type="link"
-                          icon={<DownloadOutlined />}
-                          onClick={() =>
-                            downloadServerConfig(version.serverId!)
-                          }
-                        />
-                      </Tooltip>
-                    ),
-                  ].filter(Boolean)}
-                >
-                  <List.Item.Meta
-                    title={
-                      <Space>
-                        {editingName === version.id ? (
-                          <Space>
-                            <Input
-                              value={editingNameValue}
-                              onChange={(e) =>
-                                setEditingNameValue(e.target.value)
+        <Collapse
+          style={{ marginBottom: "24px" }}
+          items={[
+            {
+              key: "1",
+              label: `Configuration Versions (${versions.length})`,
+              children: (
+                <List
+                  dataSource={versions}
+                  renderItem={(version: ConfigVersion, index: number) => (
+                    <List.Item
+                      actions={[
+                        <Tooltip title="Rename">
+                          <Button
+                            type="link"
+                            icon={<EditOutlined />}
+                            onClick={() => startEditingName(version)}
+                          />
+                        </Tooltip>,
+                        <Tooltip title="Load this version">
+                          <Button
+                            type="link"
+                            icon={<ReloadOutlined />}
+                            onClick={() => {
+                              setConfig(version.config);
+                              setIsEditable(false);
+                            }}
+                          />
+                        </Tooltip>,
+                        <Tooltip title="Preview this version">
+                          <Button
+                            type="link"
+                            icon={<EyeOutlined />}
+                            onClick={() => {
+                              setConfig(version.config);
+                              setIsEditable(false);
+                              setPreviewOpen(true);
+                            }}
+                          />
+                        </Tooltip>,
+                        version.serverId && (
+                          <Tooltip title="Download server config">
+                            <Button
+                              type="link"
+                              icon={<DownloadOutlined />}
+                              onClick={() =>
+                                downloadServerConfig(version.serverId!)
                               }
-                              onPressEnter={saveEditingName}
-                              onBlur={saveEditingName}
-                              autoFocus
-                              style={{ width: 200 }}
                             />
-                            <Button size="small" onClick={saveEditingName}>
-                              Save
-                            </Button>
-                            <Button size="small" onClick={cancelEditingName}>
-                              Cancel
-                            </Button>
+                          </Tooltip>
+                        ),
+                      ].filter(Boolean)}
+                    >
+                      <List.Item.Meta
+                        title={
+                          <Space>
+                            {editingName === version.id ? (
+                              <Space>
+                                <Input
+                                  value={editingNameValue}
+                                  onChange={(
+                                    e: React.ChangeEvent<HTMLInputElement>
+                                  ) => setEditingNameValue(e.target.value)}
+                                  onPressEnter={saveEditingName}
+                                  onBlur={saveEditingName}
+                                  autoFocus
+                                  style={{ width: 200 }}
+                                />
+                                <Button size="small" onClick={saveEditingName}>
+                                  Save
+                                </Button>
+                                <Button
+                                  size="small"
+                                  onClick={cancelEditingName}
+                                >
+                                  Cancel
+                                </Button>
+                              </Space>
+                            ) : (
+                              <Text strong>
+                                {version.name ||
+                                  `Configuration Version ${index + 1}`}
+                              </Text>
+                            )}
+                            {version.isActive && <Tag color="blue">Active</Tag>}
                           </Space>
-                        ) : (
-                          <Text strong>
-                            {version.name ||
-                              `Configuration Version ${index + 1}`}
+                        }
+                        description={
+                          <Text type="secondary">
+                            Created:{" "}
+                            {new Date(version.createdAt).toLocaleString()}
+                            {version.serverId &&
+                              ` | Server ID: ${version.serverId}`}
                           </Text>
-                        )}
-                        {version.isActive && <Tag color="blue">Active</Tag>}
-                      </Space>
-                    }
-                    description={
-                      <Text type="secondary">
-                        Created: {new Date(version.createdAt).toLocaleString()}
-                        {version.serverId &&
-                          ` | Server ID: ${version.serverId}`}
-                      </Text>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
-          </Panel>
-        </Collapse>
+                        }
+                      />
+                    </List.Item>
+                  )}
+                />
+              ),
+            },
+          ]}
+        />
       )}
 
       {/* Preview Modal */}

@@ -9,6 +9,7 @@ import {
   SettingOutlined,
   FileTextOutlined,
   ApiOutlined,
+  ToolOutlined,
 } from "@ant-design/icons";
 
 const { Sider } = Layout;
@@ -52,6 +53,11 @@ const Sidebar: React.FC = () => {
       key: "/nginx-config",
       icon: <FileTextOutlined />,
       label: "NGINX Config",
+    },
+    {
+      key: "/nginx-settings",
+      icon: <ToolOutlined />,
+      label: "NGINX Service Settings",
     },
   ];
 

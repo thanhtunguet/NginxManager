@@ -7,4 +7,9 @@ export { HttpServer, HttpServerStatus } from './http-server.entity';
 export { ServerDomainMapping } from './server-domain-mapping.entity';
 export { Location } from './location.entity';
 export { ConfigVersion } from './config-version.entity';
-export { AccessRule, AccessRuleType, AccessRuleScope } from './access-rule.entity';
+export {
+  AccessRule,
+  AccessRuleType,
+  AccessRuleScope,
+} from './access-rule.entity';
+export { NginxSettings } from './nginx-settings.entity';

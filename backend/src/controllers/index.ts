@@ -6,3 +6,4 @@ export { ListeningPortController } from './listening-port.controller';
 export { LocationController } from './location.controller';
 export { AccessRuleController } from './access-rule.controller';
 export { NginxConfigController } from './nginx-config.controller';
+export { NginxSettingsController } from './nginx-settings.controller';

@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import * as Handlebars from 'handlebars';
 import * as fs from 'fs';
+import * as Handlebars from 'handlebars';
 import * as path from 'path';
+import { Repository } from 'typeorm';
 import {
   AccessRule,
   AccessRuleScope,

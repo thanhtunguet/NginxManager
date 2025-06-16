@@ -11,6 +11,7 @@ import {
   Location,
   ConfigVersion,
   AccessRule,
+  NginxSettings,
 } from '../entities';
 import {
   UpstreamService,
@@ -21,6 +22,7 @@ import {
   LocationService,
   AccessRuleService,
   NginxConfigGeneratorService,
+  NginxSettingsService,
 } from '../services';
 import {
   UpstreamController,
@@ -31,6 +33,7 @@ import {
   LocationController,
   AccessRuleController,
   NginxConfigController,
+  NginxSettingsController,
 } from '../controllers';
 
 @Module({
@@ -46,6 +49,7 @@ import {
       Location,
       ConfigVersion,
       AccessRule,
+      NginxSettings,
     ]),
   ],
   controllers: [
@@ -57,6 +61,7 @@ import {
     LocationController,
     AccessRuleController,
     NginxConfigController,
+    NginxSettingsController,
   ],
   providers: [
     UpstreamService,
@@ -67,6 +72,7 @@ import {
     LocationService,
     AccessRuleService,
     NginxConfigGeneratorService,
+    NginxSettingsService,
   ],
   exports: [
     UpstreamService,
@@ -77,6 +83,7 @@ import {
     LocationService,
     AccessRuleService,
     NginxConfigGeneratorService,
+    NginxSettingsService,
   ],
 })
 export class NginxConfigModule {}

@@ -11,6 +11,7 @@ import {
   Location,
   ConfigVersion,
   AccessRule,
+  NginxSettings,
 } from '../entities';
 
 export const databaseConfig = registerAs(
@@ -33,6 +34,7 @@ export const databaseConfig = registerAs(
       Location,
       ConfigVersion,
       AccessRule,
+      NginxSettings,
     ],
     synchronize: true,
     dropSchema: false, // Changed from true to false to preserve data

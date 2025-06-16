@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Editor from "@monaco-editor/react";
 import { Card } from "antd";
 import {
@@ -25,7 +25,7 @@ const NginxConfigEditor: React.FC<NginxConfigEditorProps> = ({
     }
   };
 
-  const handleEditorDidMount = (editor: any, monaco: any) => {
+  const handleEditorDidMount = (_editor: any, monaco: any) => {
     // Register NGINX language
     monaco.languages.register({ id: "nginx" });
     monaco.languages.setMonarchTokensProvider("nginx", nginxLanguageDefinition);
