@@ -153,6 +153,7 @@ export interface UpdateHttpServerRequest {
   accessLogPath?: string;
   errorLogPath?: string;
   logLevel?: string;
+  locations?: CreateLocationForServerRequest[];
 }
 
 export interface ApiResponse<T> {

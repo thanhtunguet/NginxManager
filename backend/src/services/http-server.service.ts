@@ -66,9 +66,32 @@ export class HttpServerService {
   }
 
   async update(id: number, updateHttpServerDto: UpdateHttpServerDto): Promise<HttpServer> {
+    const { locations, ...serverData } = updateHttpServerDto;
+    
+    // Update the server data
     const httpServer = await this.findOne(id);
-    Object.assign(httpServer, updateHttpServerDto);
-    return await this.httpServerRepository.save(httpServer);
+    Object.assign(httpServer, serverData);
+    const savedServer = await this.httpServerRepository.save(httpServer);
+    
+    // Update locations if provided
+    if (locations !== undefined) {
+      // Remove existing locations
+      await this.locationRepository.delete({ serverId: id });
+      
+      // Create new locations
+      if (locations.length > 0) {
+        const locationEntities = locations.map(locationData => 
+          this.locationRepository.create({
+            ...locationData,
+            serverId: savedServer.id,
+          })
+        );
+        await this.locationRepository.save(locationEntities);
+      }
+    }
+    
+    // Return updated server with locations
+    return await this.findOne(savedServer.id);
   }
 
   async remove(id: number): Promise<void> {
