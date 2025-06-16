@@ -1,34 +1,34 @@
-import React, { useState, useEffect } from "react";
 import {
-  Card,
-  Button,
-  Typography,
-  Input,
-  Collapse,
-  Spin,
-  Alert,
-  Tag,
-  Space,
-  Modal,
-  Tooltip,
-  message,
-  Row,
-  Col,
-  List,
-} from "antd";
-import {
-  ExpandAltOutlined,
-  DownloadOutlined,
-  SaveOutlined,
-  EyeOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  DownloadOutlined,
+  EditOutlined,
+  EyeOutlined,
   ReloadOutlined,
+  SaveOutlined,
 } from "@ant-design/icons";
+import {
+  Alert,
+  Button,
+  Card,
+  Col,
+  Collapse,
+  Input,
+  List,
+  message,
+  Modal,
+  Row,
+  Space,
+  Spin,
+  Tag,
+  Tooltip,
+  Typography,
+} from "antd";
 import axios from "axios";
+import React, { useEffect, useState } from "react";
+import NginxConfigEditor from "../components/NginxConfigEditor";
 
 const { Title, Text } = Typography;
-const { TextArea } = Input;
 const { Panel } = Collapse;
 
 const API_BASE_URL = "http://localhost:3000/api/v1";
@@ -43,6 +43,7 @@ interface ConfigVersion {
   id: number;
   config: string;
   serverId?: number;
+  name: string;
   createdAt: string;
   isActive: boolean;
 }
@@ -54,12 +55,17 @@ const NginxConfig: React.FC = () => {
   const [versions, setVersions] = useState<ConfigVersion[]>([]);
   const [previewOpen, setPreviewOpen] = useState<boolean>(false);
   const [selectedServerId, setSelectedServerId] = useState<string>("");
+  const [, setIsEditable] = useState<boolean>(false);
+  const [configName, setConfigName] = useState<string>("");
+  const [editingName, setEditingName] = useState<number | null>(null);
+  const [editingNameValue, setEditingNameValue] = useState<string>("");
 
   const generateFullConfig = async () => {
     setLoading(true);
     try {
       const response = await axios.get(`${API_BASE_URL}/nginx-config/full`);
       setConfig(response.data.config);
+      setIsEditable(true);
       await validateConfig(response.data.config);
       message.success("Configuration generated successfully!");
     } catch (error) {
@@ -77,6 +83,7 @@ const NginxConfig: React.FC = () => {
         `${API_BASE_URL}/nginx-config/server/${serverId}`
       );
       setConfig(response.data.config);
+      setIsEditable(true);
       await validateConfig(response.data.config);
       message.success(`Server configuration generated successfully!`);
     } catch (error) {
@@ -87,7 +94,7 @@ const NginxConfig: React.FC = () => {
     }
   };
 
-  const validateConfig = async (configToValidate = config) => {
+  const validateConfig = async (_ = config) => {
     try {
       const response = await axios.get(`${API_BASE_URL}/nginx-config/validate`);
       setValidation(response.data);
@@ -101,12 +108,17 @@ const NginxConfig: React.FC = () => {
     setLoading(true);
     try {
       const url = selectedServerId
-        ? `${API_BASE_URL}/nginx-config/save?serverId=${selectedServerId}`
-        : `${API_BASE_URL}/nginx-config/save`;
+        ? `${API_BASE_URL}/nginx-config/save?serverId=${selectedServerId}&name=${encodeURIComponent(
+            configName
+          )}`
+        : `${API_BASE_URL}/nginx-config/save?name=${encodeURIComponent(
+            configName
+          )}`;
 
       await axios.post(url);
       await loadVersions();
       message.success("Configuration saved successfully!");
+      setConfigName("");
     } catch (error) {
       console.error("Error saving config:", error);
       message.error("Failed to save configuration");
@@ -187,6 +199,40 @@ const NginxConfig: React.FC = () => {
     }
   };
 
+  const renameConfigVersion = async (versionId: number, newName: string) => {
+    try {
+      await axios.put(
+        `${API_BASE_URL}/nginx-config/versions/${versionId}/rename`,
+        {
+          name: newName,
+        }
+      );
+      await loadVersions();
+      message.success("Configuration renamed successfully!");
+      setEditingName(null);
+      setEditingNameValue("");
+    } catch (error) {
+      console.error("Error renaming config:", error);
+      message.error("Failed to rename configuration");
+    }
+  };
+
+  const startEditingName = (version: ConfigVersion) => {
+    setEditingName(version.id);
+    setEditingNameValue(version.name);
+  };
+
+  const cancelEditingName = () => {
+    setEditingName(null);
+    setEditingNameValue("");
+  };
+
+  const saveEditingName = () => {
+    if (editingName && editingNameValue.trim()) {
+      renameConfigVersion(editingName, editingNameValue.trim());
+    }
+  };
+
   useEffect(() => {
     loadVersions();
   }, [selectedServerId]);
@@ -232,6 +278,15 @@ const NginxConfig: React.FC = () => {
           </Col>
 
           <Col>
+            <Input
+              placeholder="Configuration name"
+              value={configName}
+              onChange={(e) => setConfigName(e.target.value)}
+              style={{ width: 200 }}
+            />
+          </Col>
+
+          <Col>
             <Button
               icon={<CheckCircleOutlined />}
               onClick={() => validateConfig()}
@@ -245,7 +300,7 @@ const NginxConfig: React.FC = () => {
             <Button
               icon={<SaveOutlined />}
               onClick={saveConfig}
-              disabled={loading || !config}
+              disabled={loading || !config || !configName.trim()}
             >
               Save Version
             </Button>
@@ -308,15 +363,9 @@ const NginxConfig: React.FC = () => {
       {config && (
         <Collapse defaultActiveKey={["1"]} style={{ marginBottom: "24px" }}>
           <Panel header="Generated Configuration" key="1">
-            <TextArea
-              value={config}
-              onChange={(e) => setConfig(e.target.value)}
-              rows={20}
-              style={{
-                fontFamily: "monospace",
-                fontSize: "14px",
-              }}
-            />
+            <div style={{ color: "#888", fontStyle: "italic" }}>
+              Click <EyeOutlined /> Preview to view configuration.
+            </div>
           </Panel>
         </Collapse>
       )}
@@ -327,14 +376,24 @@ const NginxConfig: React.FC = () => {
           <Panel header={`Configuration Versions (${versions.length})`} key="1">
             <List
               dataSource={versions}
-              renderItem={(version) => (
+              renderItem={(version, index) => (
                 <List.Item
                   actions={[
+                    <Tooltip title="Rename">
+                      <Button
+                        type="link"
+                        icon={<EditOutlined />}
+                        onClick={() => startEditingName(version)}
+                      />
+                    </Tooltip>,
                     <Tooltip title="Load this version">
                       <Button
                         type="link"
                         icon={<ReloadOutlined />}
-                        onClick={() => setConfig(version.config)}
+                        onClick={() => {
+                          setConfig(version.config);
+                          setIsEditable(false);
+                        }}
                       />
                     </Tooltip>,
                     <Tooltip title="Preview this version">
@@ -343,16 +402,52 @@ const NginxConfig: React.FC = () => {
                         icon={<EyeOutlined />}
                         onClick={() => {
                           setConfig(version.config);
+                          setIsEditable(false);
                           setPreviewOpen(true);
                         }}
                       />
                     </Tooltip>,
-                  ]}
+                    version.serverId && (
+                      <Tooltip title="Download server config">
+                        <Button
+                          type="link"
+                          icon={<DownloadOutlined />}
+                          onClick={() =>
+                            downloadServerConfig(version.serverId!)
+                          }
+                        />
+                      </Tooltip>
+                    ),
+                  ].filter(Boolean)}
                 >
                   <List.Item.Meta
                     title={
                       <Space>
-                        <Text strong>Version #{version.id}</Text>
+                        {editingName === version.id ? (
+                          <Space>
+                            <Input
+                              value={editingNameValue}
+                              onChange={(e) =>
+                                setEditingNameValue(e.target.value)
+                              }
+                              onPressEnter={saveEditingName}
+                              onBlur={saveEditingName}
+                              autoFocus
+                              style={{ width: 200 }}
+                            />
+                            <Button size="small" onClick={saveEditingName}>
+                              Save
+                            </Button>
+                            <Button size="small" onClick={cancelEditingName}>
+                              Cancel
+                            </Button>
+                          </Space>
+                        ) : (
+                          <Text strong>
+                            {version.name ||
+                              `Configuration Version ${index + 1}`}
+                          </Text>
+                        )}
                         {version.isActive && <Tag color="blue">Active</Tag>}
                       </Space>
                     }
@@ -376,7 +471,7 @@ const NginxConfig: React.FC = () => {
         title="Configuration Preview"
         open={previewOpen}
         onCancel={() => setPreviewOpen(false)}
-        width={800}
+        width={1000}
         footer={[
           <Button key="close" onClick={() => setPreviewOpen(false)}>
             Close
@@ -391,15 +486,7 @@ const NginxConfig: React.FC = () => {
           </Button>,
         ]}
       >
-        <TextArea
-          value={config}
-          rows={25}
-          readOnly
-          style={{
-            fontFamily: "monospace",
-            fontSize: "12px",
-          }}
-        />
+        <NginxConfigEditor value={config} height="600px" readOnly={true} />
       </Modal>
     </div>
   );

@@ -15,6 +15,9 @@ export class ConfigVersion {
   @Column({ type: 'bigint', unsigned: true, nullable: true })
   serverId: number;
 
+  @Column({ type: 'varchar', length: 255, default: 'Untitled Configuration' })
+  name: string;
+
   @Column({ type: 'mediumtext' })
   config: string;
 

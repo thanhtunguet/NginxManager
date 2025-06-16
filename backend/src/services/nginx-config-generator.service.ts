@@ -86,7 +86,7 @@ export class NginxConfigGeneratorService {
     Handlebars.unregisterPartial('server');
     this.registerPartial('server', 'server.hbs');
     this.compileTemplate('main', 'main.hbs');
-    
+
     const upstreams = await this.upstreamRepository.find({
       where: { status: UpstreamStatus.ACTIVE },
     });
@@ -126,9 +126,12 @@ export class NginxConfigGeneratorService {
     });
 
     // Use server name as fallback when no domain mappings exist
-    const serverNames = server.domainMappings.length > 0
-      ? server.domainMappings.map((mapping) => mapping.domain.domain).join(' ')
-      : server.name;
+    const serverNames =
+      server.domainMappings.length > 0
+        ? server.domainMappings
+            .map((mapping) => mapping.domain.domain)
+            .join(' ')
+        : server.name;
 
     const processedLocations = await Promise.all(
       server.locations.map((location) => this.processLocationData(location)),
@@ -162,13 +165,15 @@ export class NginxConfigGeneratorService {
   private async generateSSLConfigData(server: HttpServer): Promise<string> {
     // Use directly assigned certificate for the server
     let certificateName = server.name; // fallback
-    
+
     if (server.certificate) {
       certificateName = server.certificate.name;
     } else if (server.domainMappings.length > 0) {
       // Fallback: Find certificates for the domains of this server
-      const domainIds = server.domainMappings.map((mapping) => mapping.domain.id);
-      
+      const domainIds = server.domainMappings.map(
+        (mapping) => mapping.domain.id,
+      );
+
       if (domainIds.length > 0) {
         // Get certificate mappings for the domains
         const certificateMappings = await this.certificateRepository
@@ -225,7 +230,7 @@ export class NginxConfigGeneratorService {
 
     for (let i = 0; i < lines.length; i++) {
       let line = lines[i].trim();
-      
+
       // Skip empty lines in raw output, but track them
       if (line === '') {
         continue;
@@ -246,12 +251,11 @@ export class NginxConfigGeneratorService {
       }
 
       // Add spacing around major blocks for readability
-      const shouldAddSpacing = (
-        line.startsWith('upstream ') || 
-        line.startsWith('server {') || 
-        (line === '}' && indentLevel === 0)
-      );
-      
+      const shouldAddSpacing =
+        line.startsWith('upstream ') ||
+        line.startsWith('server {') ||
+        (line === '}' && indentLevel === 0);
+
       if (shouldAddSpacing && !lastLineWasEmpty) {
         formatted.push('');
         lastLineWasEmpty = true;
@@ -264,7 +268,7 @@ export class NginxConfigGeneratorService {
     while (formatted.length > 0 && formatted[formatted.length - 1] === '') {
       formatted.pop();
     }
-    
+
     // Join with newlines and ensure proper line ending
     return formatted.join('\n') + '\n';
   }
@@ -300,7 +304,11 @@ export class NginxConfigGeneratorService {
     };
   }
 
-  async saveConfigVersion(config: string, serverId?: number): Promise<any> {
+  async saveConfigVersion(
+    config: string,
+    serverId?: number,
+    name?: string,
+  ): Promise<any> {
     // Deactivate previous active versions for this server
     if (serverId) {
       await this.configVersionRepository.update(
@@ -312,10 +320,24 @@ export class NginxConfigGeneratorService {
     const configVersion = this.configVersionRepository.create({
       config,
       serverId,
+      name: name || `Configuration ${new Date().toLocaleString()}`,
       createdAt: new Date(),
       isActive: true,
     });
 
+    return await this.configVersionRepository.save(configVersion);
+  }
+
+  async updateConfigVersionName(id: number, name: string): Promise<any> {
+    const configVersion = await this.configVersionRepository.findOne({
+      where: { id },
+    });
+
+    if (!configVersion) {
+      throw new Error('Config version not found');
+    }
+
+    configVersion.name = name;
     return await this.configVersionRepository.save(configVersion);
   }
 

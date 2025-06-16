@@ -7,6 +7,8 @@ import {
   HttpStatus,
   Res,
   Query,
+  Body,
+  Put,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { Response } from 'express';
@@ -59,7 +61,8 @@ export class NginxConfigController {
     description: 'Server not found',
   })
   async generateServerConfig(@Param('id', ParseIntPipe) id: number) {
-    const config = await this.nginxConfigGeneratorService.generateServerConfig(id);
+    const config =
+      await this.nginxConfigGeneratorService.generateServerConfig(id);
     return {
       config,
       serverId: id,
@@ -83,7 +86,8 @@ export class NginxConfigController {
   })
   async validateConfig() {
     const config = await this.nginxConfigGeneratorService.generateFullConfig();
-    const validation = await this.nginxConfigGeneratorService.validateConfig(config);
+    const validation =
+      await this.nginxConfigGeneratorService.validateConfig(config);
     return {
       ...validation,
       validatedAt: new Date().toISOString(),
@@ -93,21 +97,31 @@ export class NginxConfigController {
   @Post('save')
   @ApiOperation({ summary: 'Generate and save NGINX configuration version' })
   @ApiQuery({ name: 'serverId', required: false, type: Number })
+  @ApiQuery({ name: 'name', required: false, type: String })
   @ApiResponse({
     status: HttpStatus.CREATED,
     description: 'Configuration saved successfully',
   })
-  async saveConfig(@Query('serverId') serverId?: number) {
-    const config = serverId 
+  async saveConfig(
+    @Query('serverId') serverId?: number,
+    @Query('name') name?: string,
+  ) {
+    const config = serverId
       ? await this.nginxConfigGeneratorService.generateServerConfig(serverId)
       : await this.nginxConfigGeneratorService.generateFullConfig();
-    
-    const savedVersion = await this.nginxConfigGeneratorService.saveConfigVersion(config, serverId);
-    
+
+    const savedVersion =
+      await this.nginxConfigGeneratorService.saveConfigVersion(
+        config,
+        serverId,
+        name,
+      );
+
     return {
       message: 'Configuration saved successfully',
       versionId: savedVersion.id,
       serverId,
+      name: savedVersion.name,
       savedAt: new Date().toISOString(),
     };
   }
@@ -120,7 +134,8 @@ export class NginxConfigController {
     description: 'Configuration versions retrieved',
   })
   async getConfigVersions(@Query('serverId') serverId?: number) {
-    const versions = await this.nginxConfigGeneratorService.getConfigVersions(serverId);
+    const versions =
+      await this.nginxConfigGeneratorService.getConfigVersions(serverId);
     return {
       versions,
       serverId,
@@ -137,24 +152,54 @@ export class NginxConfigController {
   async downloadConfig(@Res() res: Response) {
     const config = await this.nginxConfigGeneratorService.generateFullConfig();
     const filename = `nginx-config-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.conf`;
-    
+
     res.setHeader('Content-Type', 'text/plain');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(config);
   }
 
   @Get('download/server/:id')
-  @ApiOperation({ summary: 'Download server-specific NGINX configuration as file' })
+  @ApiOperation({
+    summary: 'Download server-specific NGINX configuration as file',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Server configuration file downloaded',
   })
-  async downloadServerConfig(@Param('id', ParseIntPipe) id: number, @Res() res: Response) {
-    const config = await this.nginxConfigGeneratorService.generateServerConfig(id);
+  async downloadServerConfig(
+    @Param('id', ParseIntPipe) id: number,
+    @Res() res: Response,
+  ) {
+    const config =
+      await this.nginxConfigGeneratorService.generateServerConfig(id);
     const filename = `nginx-server-${id}-config-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.conf`;
-    
+
     res.setHeader('Content-Type', 'text/plain');
     res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
     res.send(config);
+  }
+
+  @Put('versions/:id/rename')
+  @ApiOperation({ summary: 'Rename a configuration version' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'Configuration version renamed successfully',
+  })
+  async renameConfigVersion(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() body: { name: string },
+  ) {
+    const updatedVersion =
+      await this.nginxConfigGeneratorService.updateConfigVersionName(
+        id,
+        body.name,
+      );
+
+    return {
+      message: 'Configuration version renamed successfully',
+      versionId: updatedVersion.id,
+      name: updatedVersion.name,
+      updatedAt: new Date().toISOString(),
+    };
   }
 }
