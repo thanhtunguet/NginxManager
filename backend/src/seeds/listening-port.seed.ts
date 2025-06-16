@@ -78,11 +78,13 @@ export class ListeningPortSeeder {
     ];
 
     console.log('Seeding listening ports...');
-    
+
     for (const portData of seedData) {
       const listeningPort = this.listeningPortRepository.create(portData);
       await this.listeningPortRepository.save(listeningPort);
-      console.log(`Created listening port: ${portData.name} (${portData.port})`);
+      console.log(
+        `Created listening port: ${portData.name} (${portData.port})`,
+      );
     }
 
     console.log('Listening ports seeding completed!');

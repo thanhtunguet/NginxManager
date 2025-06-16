@@ -11,11 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { DomainService } from '../services/domain.service';
-import {
-  CreateDomainDto,
-  UpdateDomainDto,
-  DomainResponseDto,
-} from '../dto';
+import { CreateDomainDto, UpdateDomainDto, DomainResponseDto } from '../dto';
 
 @ApiTags('domains')
 @Controller('api/v1/domains')

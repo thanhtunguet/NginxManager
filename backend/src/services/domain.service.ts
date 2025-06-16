@@ -27,11 +27,11 @@ export class DomainService {
       where: { id },
       relations: ['certificateMappings', 'serverMappings'],
     });
-    
+
     if (!domain) {
       throw new NotFoundException(`Domain with ID ${id} not found`);
     }
-    
+
     return domain;
   }
 

@@ -1,21 +1,29 @@
-import { IsString, IsNumber, IsOptional, IsNotEmpty } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsNotEmpty,
+  IsNumberString,
+} from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 
 export class CreateLocationDto {
   @ApiProperty({ description: 'HTTP Server ID' })
-  @IsNumber()
-  serverId: number;
+  @IsNumberString()
+  serverId: string;
 
   @ApiProperty({ description: 'Upstream ID' })
-  @IsNumber()
-  upstreamId: number;
+  @IsNumberString()
+  upstreamId: string;
 
   @ApiProperty({ description: 'Location path pattern' })
   @IsString()
   @IsNotEmpty()
   path: string;
 
-  @ApiProperty({ description: 'Additional NGINX configuration', required: false })
+  @ApiProperty({
+    description: 'Additional NGINX configuration',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   additionalConfig?: string;
@@ -30,13 +38,13 @@ export class UpdateLocationDto extends PartialType(CreateLocationDto) {}
 
 export class LocationResponseDto {
   @ApiProperty()
-  id: number;
+  id: string;
 
   @ApiProperty()
-  serverId: number;
+  serverId: string;
 
   @ApiProperty()
-  upstreamId: number;
+  upstreamId: string;
 
   @ApiProperty()
   path: string;

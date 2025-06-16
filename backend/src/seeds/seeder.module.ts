@@ -5,15 +5,8 @@ import { ListeningPortSeeder } from './listening-port.seed';
 import { SeederService } from './seeder.service';
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([
-      ListeningPort,
-    ]),
-  ],
-  providers: [
-    ListeningPortSeeder,
-    SeederService,
-  ],
+  imports: [TypeOrmModule.forFeature([ListeningPort])],
+  providers: [ListeningPortSeeder, SeederService],
   exports: [SeederService],
 })
 export class SeederModule {}

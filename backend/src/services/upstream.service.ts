@@ -27,15 +27,18 @@ export class UpstreamService {
       where: { id },
       relations: ['locations'],
     });
-    
+
     if (!upstream) {
       throw new NotFoundException(`Upstream with ID ${id} not found`);
     }
-    
+
     return upstream;
   }
 
-  async update(id: number, updateUpstreamDto: UpdateUpstreamDto): Promise<Upstream> {
+  async update(
+    id: number,
+    updateUpstreamDto: UpdateUpstreamDto,
+  ): Promise<Upstream> {
     const upstream = await this.findOne(id);
     Object.assign(upstream, updateUpstreamDto);
     return await this.upstreamRepository.save(upstream);

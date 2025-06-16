@@ -1,12 +1,11 @@
 import {
   IsString,
-  IsNumber,
   IsEnum,
   IsOptional,
   IsNotEmpty,
-  IsPositive,
   IsArray,
   ValidateNested,
+  IsNumberString,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
@@ -15,15 +14,24 @@ import { LocationResponseDto } from './location.dto';
 
 export class CreateLocationForServerDto {
   @ApiProperty({ description: 'Upstream ID' })
-  @IsNumber()
-  upstreamId: number;
+  @IsNumberString(
+    {},
+    {
+      message:
+        'upstreamId must be a number conforming to the specified constraints',
+    },
+  )
+  upstreamId: string;
 
   @ApiProperty({ description: 'Location path pattern', default: '/' })
   @IsString()
   @IsNotEmpty()
   path: string;
 
-  @ApiProperty({ description: 'Additional NGINX configuration', required: false })
+  @ApiProperty({
+    description: 'Additional NGINX configuration',
+    required: false,
+  })
   @IsString()
   @IsOptional()
   additionalConfig?: string;
@@ -36,9 +44,8 @@ export class CreateLocationForServerDto {
 
 export class CreateHttpServerDto {
   @ApiProperty({ description: 'Listening port ID' })
-  @IsNumber({}, { message: 'Listening port ID must be a valid number' })
-  @IsPositive({ message: 'Listening port ID must be a positive number' })
-  listeningPortId: number;
+  @IsNumberString({}, { message: 'Listening port ID must be a valid number' })
+  listeningPortId: string;
 
   @ApiProperty({ description: 'Server name/identifier' })
   @IsString()
@@ -73,15 +80,24 @@ export class CreateHttpServerDto {
   @IsOptional()
   logLevel?: string;
 
-  @ApiProperty({ description: 'SSL Certificate ID (required for SSL/HTTPS)', required: false })
-  @IsNumber()
+  @ApiProperty({
+    description: 'SSL Certificate ID (required for SSL/HTTPS)',
+    required: false,
+  })
+  @IsNumberString(
+    {},
+    {
+      message:
+        'certificateId must be a number conforming to the specified constraints',
+    },
+  )
   @IsOptional()
-  certificateId?: number;
+  certificateId?: string;
 
-  @ApiProperty({ 
+  @ApiProperty({
     description: 'Location blocks for this server',
     type: [CreateLocationForServerDto],
-    required: false
+    required: false,
   })
   @IsArray()
   @ValidateNested({ each: true })
@@ -94,10 +110,10 @@ export class UpdateHttpServerDto extends PartialType(CreateHttpServerDto) {}
 
 export class HttpServerResponseDto {
   @ApiProperty()
-  id: number;
+  id: string;
 
   @ApiProperty()
-  listeningPortId: number;
+  listeningPortId: string;
 
   @ApiProperty()
   name: string;
@@ -118,7 +134,7 @@ export class HttpServerResponseDto {
   logLevel: string;
 
   @ApiProperty()
-  certificateId: number;
+  certificateId: string;
 
   @ApiProperty({ type: [LocationResponseDto] })
   locations: LocationResponseDto[];

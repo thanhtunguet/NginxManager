@@ -2,7 +2,9 @@ import { IsString, IsNotEmpty, Matches } from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 
 export class CreateDomainDto {
-  @ApiProperty({ description: 'Domain name (e.g., example.com, *.example.com)' })
+  @ApiProperty({
+    description: 'Domain name (e.g., example.com, *.example.com)',
+  })
   @IsString()
   @IsNotEmpty()
   @Matches(/^(\*\.)?[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*$/, {

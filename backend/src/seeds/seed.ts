@@ -31,12 +31,12 @@ class SeedAppModule {}
 async function bootstrap() {
   try {
     console.log('Starting seed application...');
-    
+
     const app = await NestFactory.createApplicationContext(SeedAppModule);
-    
+
     const seederService = app.get(SeederService);
     await seederService.seedAll();
-    
+
     await app.close();
     console.log('Seeding completed successfully!');
     process.exit(0);

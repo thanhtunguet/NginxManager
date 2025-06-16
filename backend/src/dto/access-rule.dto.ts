@@ -16,12 +16,18 @@ export class CreateAccessRuleDto {
   @IsEnum(AccessRuleScope)
   scope: AccessRuleScope;
 
-  @ApiProperty({ description: 'Server ID (required for server scope)', required: false })
+  @ApiProperty({
+    description: 'Server ID (required for server scope)',
+    required: false,
+  })
   @IsNumber()
   @IsOptional()
   serverId?: number;
 
-  @ApiProperty({ description: 'Location ID (required for location scope)', required: false })
+  @ApiProperty({
+    description: 'Location ID (required for location scope)',
+    required: false,
+  })
   @IsNumber()
   @IsOptional()
   locationId?: number;

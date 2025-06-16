@@ -27,15 +27,18 @@ export class AccessRuleService {
       where: { id },
       relations: ['httpServer', 'location'],
     });
-    
+
     if (!accessRule) {
       throw new NotFoundException(`Access Rule with ID ${id} not found`);
     }
-    
+
     return accessRule;
   }
 
-  async update(id: number, updateAccessRuleDto: UpdateAccessRuleDto): Promise<AccessRule> {
+  async update(
+    id: number,
+    updateAccessRuleDto: UpdateAccessRuleDto,
+  ): Promise<AccessRule> {
     const accessRule = await this.findOne(id);
     Object.assign(accessRule, updateAccessRuleDto);
     return await this.accessRuleRepository.save(accessRule);

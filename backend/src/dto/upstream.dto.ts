@@ -1,4 +1,12 @@
-import { IsString, IsNumber, IsEnum, IsOptional, IsNotEmpty, Min, Max } from 'class-validator';
+import {
+  IsString,
+  IsNumber,
+  IsEnum,
+  IsOptional,
+  IsNotEmpty,
+  Min,
+  Max,
+} from 'class-validator';
 import { ApiProperty, PartialType } from '@nestjs/swagger';
 import { UpstreamStatus } from '../entities';
 
@@ -36,7 +44,10 @@ export class CreateUpstreamDto {
   @IsOptional()
   healthCheckInterval?: number;
 
-  @ApiProperty({ description: 'Maximum failures before marking as down', default: 3 })
+  @ApiProperty({
+    description: 'Maximum failures before marking as down',
+    default: 3,
+  })
   @IsNumber()
   @Min(1)
   @Max(10)

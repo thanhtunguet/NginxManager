@@ -11,8 +11,12 @@ export class ListeningPortService {
     private readonly listeningPortRepository: Repository<ListeningPort>,
   ) {}
 
-  async create(createListeningPortDto: CreateListeningPortDto): Promise<ListeningPort> {
-    const listeningPort = this.listeningPortRepository.create(createListeningPortDto);
+  async create(
+    createListeningPortDto: CreateListeningPortDto,
+  ): Promise<ListeningPort> {
+    const listeningPort = this.listeningPortRepository.create(
+      createListeningPortDto,
+    );
     return await this.listeningPortRepository.save(listeningPort);
   }
 
@@ -27,15 +31,18 @@ export class ListeningPortService {
       where: { id },
       relations: ['httpServers'],
     });
-    
+
     if (!listeningPort) {
       throw new NotFoundException(`Listening Port with ID ${id} not found`);
     }
-    
+
     return listeningPort;
   }
 
-  async update(id: number, updateListeningPortDto: UpdateListeningPortDto): Promise<ListeningPort> {
+  async update(
+    id: number,
+    updateListeningPortDto: UpdateListeningPortDto,
+  ): Promise<ListeningPort> {
     const listeningPort = await this.findOne(id);
     Object.assign(listeningPort, updateListeningPortDto);
     return await this.listeningPortRepository.save(listeningPort);

@@ -154,15 +154,10 @@ const Servers: React.FC = () => {
 
   const handleModalOk = () => {
     form.validateFields().then((values) => {
-      // Ensure listeningPortId is a number and upstreamId in locations are numbers
+      // Prepare form data for submission
       const formData = {
         ...values,
-        listeningPortId: Number(values.listeningPortId),
-        locations:
-          values.locations?.map((location: any) => ({
-            ...location,
-            upstreamId: Number(location.upstreamId),
-          })) || [],
+        locations: values.locations || [],
       };
 
       if (isEditMode && editingServer) {
@@ -307,7 +302,7 @@ const Servers: React.FC = () => {
                   showSearch
                   onChange={(value) => {
                     const selectedPort = listeningPorts.find(
-                      (port) => Number(port.id) === value
+                      (port) => port.id === value
                     );
                     const isHttps = selectedPort?.ssl === true;
                     setShowCertificateField(isHttps);
@@ -317,7 +312,7 @@ const Servers: React.FC = () => {
                   }}
                 >
                   {listeningPorts.map((port) => (
-                    <Option key={port.id} value={Number(port.id)}>
+                    <Option key={port.id} value={port.id}>
                       {port.name} - Port {port.port} (
                       {port.protocol.toUpperCase()}){port.ssl && " SSL"}
                       {port.http2 && " HTTP/2"}
@@ -347,7 +342,7 @@ const Servers: React.FC = () => {
                     allowClear
                   >
                     {certificates.map((cert) => (
-                      <Option key={cert.id} value={Number(cert.id)}>
+                      <Option key={cert.id} value={cert.id}>
                         {cert.name} (Expires:{" "}
                         {new Date(cert.expiresAt).toLocaleDateString()})
                       </Option>

@@ -1,5 +1,5 @@
 export interface Upstream {
-  id: number;
+  id: string;
   name: string;
   server: string;
   keepAlive: number;
@@ -12,13 +12,13 @@ export interface Upstream {
 }
 
 export interface Domain {
-  id: number;
+  id: string;
   domain: string;
   createdAt?: string;
 }
 
 export interface Certificate {
-  id: number;
+  id: string;
   name: string;
   certificate: string;
   privateKey: string;
@@ -30,24 +30,24 @@ export interface Certificate {
 }
 
 export interface HttpServer {
-  id: number;
-  listeningPortId: number;
+  id: string;
+  listeningPortId: string;
   name: string;
   additionalConfig: string;
   status: "active" | "inactive";
   accessLogPath: string;
   errorLogPath: string;
   logLevel: string;
-  certificateId?: number;
+  certificateId?: string;
   locations?: Location[];
   createdAt?: string;
   updatedAt?: string;
 }
 
 export interface Location {
-  id: number;
-  serverId: number;
-  upstreamId: number;
+  id: string;
+  serverId: string;
+  upstreamId: string;
   path: string;
   additionalConfig: string;
   clientMaxBodySize: string;
@@ -56,7 +56,7 @@ export interface Location {
 }
 
 export interface ListeningPort {
-  id: number;
+  id: string;
   name: string;
   port: number;
   protocol: string;
@@ -66,17 +66,17 @@ export interface ListeningPort {
 }
 
 export interface ConfigVersion {
-  id: number;
-  serverId: number;
+  id: string;
+  serverId: string;
   config: string;
   createdAt: string;
   isActive: boolean;
 }
 
 export interface AccessRule {
-  id: number;
-  serverId?: number;
-  locationId?: number;
+  id: string;
+  serverId?: string;
+  locationId?: string;
   ipAddress: string;
   action: "allow" | "deny";
   description?: string;
@@ -130,32 +130,32 @@ export interface UpdateCertificateRequest {
 }
 
 export interface CreateLocationForServerRequest {
-  upstreamId: number;
+  upstreamId: string;
   path: string;
   additionalConfig?: string;
   clientMaxBodySize?: string;
 }
 
 export interface CreateHttpServerRequest {
-  listeningPortId: number;
+  listeningPortId: string;
   name: string;
   additionalConfig?: string;
   accessLogPath?: string;
   errorLogPath?: string;
   logLevel?: string;
-  certificateId?: number;
+  certificateId?: string;
   locations?: CreateLocationForServerRequest[];
 }
 
 export interface UpdateHttpServerRequest {
-  listeningPortId?: number;
+  listeningPortId?: string;
   name?: string;
   additionalConfig?: string;
   status?: "active" | "inactive";
   accessLogPath?: string;
   errorLogPath?: string;
   logLevel?: string;
-  certificateId?: number;
+  certificateId?: string;
   locations?: CreateLocationForServerRequest[];
 }
 
