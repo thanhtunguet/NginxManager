@@ -10,7 +10,7 @@ import {
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { NginxSettingsService } from '../services/nginx-settings.service';
 
-@ApiTags('nginx-settings')
+@ApiTags('NGINX Settings')
 @Controller('api/v1/nginx-settings')
 export class NginxSettingsController {
   constructor(private readonly nginxSettingsService: NginxSettingsService) {}

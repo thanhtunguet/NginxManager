@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import {name, description, version} from '../package.json';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -20,16 +21,9 @@ async function bootstrap() {
 
   // Swagger configuration
   const config = new DocumentBuilder()
-    .setTitle('NGINX Configuration Manager API')
-    .setDescription('API for managing NGINX configurations')
-    .setVersion('1.0')
-    .addTag('upstreams', 'Upstream management')
-    .addTag('domains', 'Domain management')
-    .addTag('certificates', 'Certificate management')
-    .addTag('http-servers', 'HTTP server management')
-    .addTag('listening-ports', 'Listening port management')
-    .addTag('locations', 'Location management')
-    .addTag('access-rules', 'Access rule management')
+    .setTitle(name)
+    .setDescription(description)
+    .setVersion(version)
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

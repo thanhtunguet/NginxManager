@@ -17,7 +17,7 @@ import {
   UpdateHttpServerDto,
 } from '../dto';
 
-@ApiTags('http-servers')
+@ApiTags('HTTP Servers')
 @Controller('api/v1/servers')
 export class HttpServerController {
   constructor(private readonly httpServerService: HttpServerService) {}

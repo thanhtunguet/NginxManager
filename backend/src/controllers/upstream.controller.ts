@@ -17,7 +17,7 @@ import {
   UpstreamResponseDto,
 } from '../dto';
 
-@ApiTags('upstreams')
+@ApiTags('Upstreams')
 @Controller('api/v1/upstreams')
 export class UpstreamController {
   constructor(private readonly upstreamService: UpstreamService) {}

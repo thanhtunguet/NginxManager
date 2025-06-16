@@ -17,7 +17,7 @@ import {
   UpdateListeningPortDto,
 } from '../dto';
 
-@ApiTags('listening-ports')
+@ApiTags('Listening Ports')
 @Controller('api/v1/listening-ports')
 export class ListeningPortController {
   constructor(private readonly listeningPortService: ListeningPortService) {}

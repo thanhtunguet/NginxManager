@@ -14,7 +14,7 @@ import { ApiOperation, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { NginxConfigGeneratorService } from '../services/nginx-config-generator.service';
 
-@ApiTags('nginx-config')
+@ApiTags('Nginx Configuration')
 @Controller('api/v1/nginx-config')
 export class NginxConfigController {
   constructor(

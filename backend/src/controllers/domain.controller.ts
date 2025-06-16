@@ -13,7 +13,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { DomainService } from '../services/domain.service';
 import { CreateDomainDto, DomainResponseDto, UpdateDomainDto } from '../dto';
 
-@ApiTags('domains')
+@ApiTags('Domains')
 @Controller('api/v1/domains')
 export class DomainController {
   constructor(private readonly domainService: DomainService) {}

@@ -17,7 +17,7 @@ import {
   UpdateAccessRuleDto,
 } from '../dto';
 
-@ApiTags('access-rules')
+@ApiTags('Access Rules')
 @Controller('api/v1/access-rules')
 export class AccessRuleController {
   constructor(private readonly accessRuleService: AccessRuleService) {}
