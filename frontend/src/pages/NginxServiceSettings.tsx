@@ -10,12 +10,14 @@ import {
   Row,
   Col,
   Divider,
+  Modal,
 } from "antd";
 import {
   SaveOutlined,
   ReloadOutlined,
   PlayCircleOutlined,
   ExperimentOutlined,
+  ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import axios from "axios";
 import NginxConfigEditor from "../components/NginxConfigEditor";
@@ -124,38 +126,49 @@ const NginxServiceSettings: React.FC = () => {
   };
 
   const reloadNginxService = async () => {
-    setLoading(true);
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/nginx-settings/reload`
-      );
-      const result: CommandResult = {
-        success: response.data.success,
-        logs: response.data.logs || "",
-        command: response.data.command || "",
-        timestamp: new Date().toLocaleString(),
-      };
-      setLastReloadResult(result);
+    Modal.confirm({
+      title: "Reload NGINX Service",
+      icon: <ExclamationCircleOutlined />,
+      content:
+        "Are you sure you want to reload the NGINX service? This will apply any configuration changes and may temporarily interrupt service.",
+      okText: "Yes, Reload",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: async () => {
+        setLoading(true);
+        try {
+          const response = await axios.post(
+            `${API_BASE_URL}/nginx-settings/reload`
+          );
+          const result: CommandResult = {
+            success: response.data.success,
+            logs: response.data.logs || "",
+            command: response.data.command || "",
+            timestamp: new Date().toLocaleString(),
+          };
+          setLastReloadResult(result);
 
-      if (response.data.success) {
-        message.success("NGINX service reloaded successfully!");
-      } else {
-        message.error("Failed to reload NGINX service!");
-      }
-    } catch (error) {
-      console.error("Error reloading nginx service:", error);
-      message.error("Failed to reload NGINX service");
-      setLastReloadResult({
-        success: false,
-        logs: `Error: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
-        command: "Command execution failed",
-        timestamp: new Date().toLocaleString(),
-      });
-    } finally {
-      setLoading(false);
-    }
+          if (response.data.success) {
+            message.success("NGINX service reloaded successfully!");
+          } else {
+            message.error("Failed to reload NGINX service!");
+          }
+        } catch (error) {
+          console.error("Error reloading nginx service:", error);
+          message.error("Failed to reload NGINX service");
+          setLastReloadResult({
+            success: false,
+            logs: `Error: ${
+              error instanceof Error ? error.message : "Unknown error"
+            }`,
+            command: "Command execution failed",
+            timestamp: new Date().toLocaleString(),
+          });
+        } finally {
+          setLoading(false);
+        }
+      },
+    });
   };
 
   useEffect(() => {
