@@ -33,6 +33,7 @@ const Servers: React.FC = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingServer, setEditingServer] = useState<HttpServer | null>(null);
+  const [showCertificateField, setShowCertificateField] = useState(false);
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -111,6 +112,7 @@ const Servers: React.FC = () => {
   const handleCreate = () => {
     setIsEditMode(false);
     setEditingServer(null);
+    setShowCertificateField(false);
     setIsModalVisible(true);
     form.resetFields();
     form.setFieldsValue({
@@ -125,6 +127,13 @@ const Servers: React.FC = () => {
     setIsEditMode(true);
     setEditingServer(server);
     setIsModalVisible(true);
+
+    // Check if the selected port is HTTPS to show certificate field
+    const selectedPort = listeningPorts.find(
+      (port) => port.id === server.listeningPortId
+    );
+    setShowCertificateField(selectedPort?.ssl === true);
+
     form.setFieldsValue({
       listeningPortId: server.listeningPortId,
       name: server.name,
@@ -168,6 +177,7 @@ const Servers: React.FC = () => {
     setIsModalVisible(false);
     setIsEditMode(false);
     setEditingServer(null);
+    setShowCertificateField(false);
     form.resetFields();
   };
 
@@ -292,7 +302,20 @@ const Servers: React.FC = () => {
                   { required: true, message: "Please select a listening port" },
                 ]}
               >
-                <Select placeholder="Select a listening port" showSearch>
+                <Select
+                  placeholder="Select a listening port"
+                  showSearch
+                  onChange={(value) => {
+                    const selectedPort = listeningPorts.find(
+                      (port) => Number(port.id) === value
+                    );
+                    const isHttps = selectedPort?.ssl === true;
+                    setShowCertificateField(isHttps);
+                    if (!isHttps) {
+                      form.setFieldValue("certificateId", undefined);
+                    }
+                  }}
+                >
                   {listeningPorts.map((port) => (
                     <Option key={port.id} value={Number(port.id)}>
                       {port.name} - Port {port.port} (
@@ -304,6 +327,36 @@ const Servers: React.FC = () => {
               </Form.Item>
             </Col>
           </Row>
+
+          {showCertificateField && (
+            <Row gutter={12}>
+              <Col span={24}>
+                <Form.Item
+                  name="certificateId"
+                  label="SSL Certificate"
+                  rules={[
+                    {
+                      required: true,
+                      message: "Please select an SSL certificate",
+                    },
+                  ]}
+                >
+                  <Select
+                    placeholder="Select SSL certificate"
+                    showSearch
+                    allowClear
+                  >
+                    {certificates.map((cert) => (
+                      <Option key={cert.id} value={Number(cert.id)}>
+                        {cert.name} (Expires:{" "}
+                        {new Date(cert.expiresAt).toLocaleDateString()})
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+              </Col>
+            </Row>
+          )}
 
           <Row gutter={12}>
             <Col span={8}>
