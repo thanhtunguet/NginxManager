@@ -22,7 +22,7 @@ export interface Certificate {
   name: string;
   certificate: string;
   privateKey: string;
-  expiredAt: string;
+  expiresAt: string;
   issuer: string;
   autoRenew: boolean;
   createdAt?: string;
@@ -38,6 +38,7 @@ export interface HttpServer {
   accessLogPath: string;
   errorLogPath: string;
   logLevel: string;
+  certificateId?: number;
   locations?: Location[];
   createdAt?: string;
   updatedAt?: string;
@@ -142,6 +143,7 @@ export interface CreateHttpServerRequest {
   accessLogPath?: string;
   errorLogPath?: string;
   logLevel?: string;
+  certificateId?: number;
   locations?: CreateLocationForServerRequest[];
 }
 
@@ -153,6 +155,7 @@ export interface UpdateHttpServerRequest {
   accessLogPath?: string;
   errorLogPath?: string;
   logLevel?: string;
+  certificateId?: number;
   locations?: CreateLocationForServerRequest[];
 }
 

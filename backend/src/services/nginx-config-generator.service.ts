@@ -98,6 +98,7 @@ export class NginxConfigGeneratorService {
         'locations.upstream',
         'domainMappings',
         'domainMappings.domain',
+        'certificate',
       ],
     });
 
@@ -159,20 +160,26 @@ export class NginxConfigGeneratorService {
   }
 
   private async generateSSLConfigData(server: HttpServer): Promise<string> {
-    // Find certificates for the domains of this server
-    const domainIds = server.domainMappings.map((mapping) => mapping.domain.id);
+    // Use directly assigned certificate for the server
     let certificateName = server.name; // fallback
+    
+    if (server.certificate) {
+      certificateName = server.certificate.name;
+    } else if (server.domainMappings.length > 0) {
+      // Fallback: Find certificates for the domains of this server
+      const domainIds = server.domainMappings.map((mapping) => mapping.domain.id);
+      
+      if (domainIds.length > 0) {
+        // Get certificate mappings for the domains
+        const certificateMappings = await this.certificateRepository
+          .createQueryBuilder('certificate')
+          .innerJoin('certificate.domainMappings', 'cdm')
+          .where('cdm.domainId IN (:...domainIds)', { domainIds })
+          .getMany();
 
-    if (domainIds.length > 0) {
-      // Get certificate mappings for the domains
-      const certificateMappings = await this.certificateRepository
-        .createQueryBuilder('certificate')
-        .innerJoin('certificate.domainMappings', 'cdm')
-        .where('cdm.domainId IN (:...domainIds)', { domainIds })
-        .getMany();
-
-      if (certificateMappings.length > 0) {
-        certificateName = certificateMappings[0].name; // Use first certificate found
+        if (certificateMappings.length > 0) {
+          certificateName = certificateMappings[0].name; // Use first certificate found
+        }
       }
     }
 
@@ -192,6 +199,7 @@ export class NginxConfigGeneratorService {
         'locations.upstream',
         'domainMappings',
         'domainMappings.domain',
+        'certificate',
       ],
     });
 

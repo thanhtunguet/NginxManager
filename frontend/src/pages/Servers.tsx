@@ -17,7 +17,14 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { PlusOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
 import api from "../services/api";
-import { HttpServer, CreateHttpServerRequest, UpdateHttpServerRequest, ListeningPort, Upstream } from "../types";
+import {
+  HttpServer,
+  CreateHttpServerRequest,
+  UpdateHttpServerRequest,
+  ListeningPort,
+  Upstream,
+  Certificate,
+} from "../types";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -49,6 +56,14 @@ const Servers: React.FC = () => {
     queryKey: ["upstreams"],
     queryFn: async () => {
       const response = await api.get("/upstreams");
+      return response.data;
+    },
+  });
+
+  const { data: certificates = [] } = useQuery<Certificate[]>({
+    queryKey: ["certificates"],
+    queryFn: async () => {
+      const response = await api.get("/certificates");
       return response.data;
     },
   });
@@ -100,7 +115,9 @@ const Servers: React.FC = () => {
     form.resetFields();
     form.setFieldsValue({
       logLevel: "info",
-      locations: [{ path: "/", upstreamId: undefined, clientMaxBodySize: "1m" }],
+      locations: [
+        { path: "/", upstreamId: undefined, clientMaxBodySize: "1m" },
+      ],
     });
   };
 
@@ -115,12 +132,14 @@ const Servers: React.FC = () => {
       accessLogPath: server.accessLogPath,
       errorLogPath: server.errorLogPath,
       additionalConfig: server.additionalConfig,
-      locations: server.locations?.map(location => ({
-        upstreamId: location.upstreamId,
-        path: location.path,
-        additionalConfig: location.additionalConfig,
-        clientMaxBodySize: location.clientMaxBodySize,
-      })) || [],
+      certificateId: server.certificateId,
+      locations:
+        server.locations?.map((location) => ({
+          upstreamId: location.upstreamId,
+          path: location.path,
+          additionalConfig: location.additionalConfig,
+          clientMaxBodySize: location.clientMaxBodySize,
+        })) || [],
     });
   };
 
@@ -130,12 +149,13 @@ const Servers: React.FC = () => {
       const formData = {
         ...values,
         listeningPortId: Number(values.listeningPortId),
-        locations: values.locations?.map((location: any) => ({
-          ...location,
-          upstreamId: Number(location.upstreamId),
-        })) || [],
+        locations:
+          values.locations?.map((location: any) => ({
+            ...location,
+            upstreamId: Number(location.upstreamId),
+          })) || [],
       };
-      
+
       if (isEditMode && editingServer) {
         updateMutation.mutate({ id: editingServer.id, data: formData });
       } else {
@@ -247,51 +267,66 @@ const Servers: React.FC = () => {
           layout="vertical"
           initialValues={{
             logLevel: "info",
-            locations: [{ path: "/", upstreamId: undefined, clientMaxBodySize: "1m" }],
+            locations: [
+              { path: "/", upstreamId: undefined, clientMaxBodySize: "1m" },
+            ],
           }}
         >
-          <Form.Item
-            name="listeningPortId"
-            label="Listening Port"
-            rules={[
-              { required: true, message: "Please select a listening port" },
-            ]}
-          >
-            <Select placeholder="Select a listening port" showSearch>
-              {listeningPorts.map((port) => (
-                <Option key={port.id} value={Number(port.id)}>
-                  {port.name} - Port {port.port} ({port.protocol.toUpperCase()})
-                  {port.ssl && " SSL"}
-                  {port.http2 && " HTTP/2"}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
+          <Row gutter={12}>
+            <Col span={12}>
+              <Form.Item
+                name="name"
+                label="Server Name"
+                rules={[
+                  { required: true, message: "Please enter server name" },
+                ]}
+              >
+                <Input placeholder="Enter server name" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="listeningPortId"
+                label="Listening Port"
+                rules={[
+                  { required: true, message: "Please select a listening port" },
+                ]}
+              >
+                <Select placeholder="Select a listening port" showSearch>
+                  {listeningPorts.map((port) => (
+                    <Option key={port.id} value={Number(port.id)}>
+                      {port.name} - Port {port.port} (
+                      {port.protocol.toUpperCase()}){port.ssl && " SSL"}
+                      {port.http2 && " HTTP/2"}
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
 
-          <Form.Item
-            name="name"
-            label="Server Name"
-            rules={[{ required: true, message: "Please enter server name" }]}
-          >
-            <Input placeholder="Enter server name" />
-          </Form.Item>
-
-          <Form.Item name="logLevel" label="Log Level">
-            <Select>
-              <Option value="debug">Debug</Option>
-              <Option value="info">Info</Option>
-              <Option value="warn">Warn</Option>
-              <Option value="error">Error</Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item name="accessLogPath" label="Access Log Path">
-            <Input placeholder="e.g., /var/log/nginx/access.log" />
-          </Form.Item>
-
-          <Form.Item name="errorLogPath" label="Error Log Path">
-            <Input placeholder="e.g., /var/log/nginx/error.log" />
-          </Form.Item>
+          <Row gutter={12}>
+            <Col span={8}>
+              <Form.Item name="logLevel" label="Log Level">
+                <Select>
+                  <Option value="debug">Debug</Option>
+                  <Option value="info">Info</Option>
+                  <Option value="warn">Warn</Option>
+                  <Option value="error">Error</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="accessLogPath" label="Access Log Path">
+                <Input placeholder="e.g., /var/log/nginx/access.log" />
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item name="errorLogPath" label="Error Log Path">
+                <Input placeholder="e.g., /var/log/nginx/error.log" />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item name="additionalConfig" label="Additional Configuration">
             <TextArea
@@ -301,25 +336,23 @@ const Servers: React.FC = () => {
           </Form.Item>
 
           <Divider>Location Blocks</Divider>
-          
-          <Form.List 
+
+          <Form.List
             name="locations"
-            initialValue={[{ path: "/", upstreamId: undefined, clientMaxBodySize: "1m" }]}
+            initialValue={[
+              { path: "/", upstreamId: undefined, clientMaxBodySize: "1m" },
+            ]}
           >
             {(fields, { add, remove }) => (
               <>
                 {fields.map(({ key, name, ...restField }) => (
-                  <Card 
-                    key={key} 
-                    size="small" 
+                  <Card
+                    key={key}
+                    size="small"
                     title={`Location Block ${name + 1}`}
                     extra={
                       fields.length > 1 && (
-                        <Button 
-                          type="link" 
-                          danger 
-                          onClick={() => remove(name)}
-                        >
+                        <Button type="link" danger onClick={() => remove(name)}>
                           Remove
                         </Button>
                       )
@@ -330,9 +363,14 @@ const Servers: React.FC = () => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, 'path']}
+                          name={[name, "path"]}
                           label="Path"
-                          rules={[{ required: true, message: 'Please enter location path' }]}
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please enter location path",
+                            },
+                          ]}
                         >
                           <Input placeholder="e.g., /, /api, /static" />
                         </Form.Item>
@@ -340,9 +378,14 @@ const Servers: React.FC = () => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, 'upstreamId']}
+                          name={[name, "upstreamId"]}
                           label="Upstream"
-                          rules={[{ required: true, message: 'Please select an upstream' }]}
+                          rules={[
+                            {
+                              required: true,
+                              message: "Please select an upstream",
+                            },
+                          ]}
                         >
                           <Select placeholder="Select upstream">
                             {upstreams.map((upstream) => (
@@ -356,7 +399,7 @@ const Servers: React.FC = () => {
                       <Col span={8}>
                         <Form.Item
                           {...restField}
-                          name={[name, 'clientMaxBodySize']}
+                          name={[name, "clientMaxBodySize"]}
                           label="Max Body Size"
                         >
                           <Input placeholder="e.g., 1m, 10m, 100m" />
@@ -365,7 +408,7 @@ const Servers: React.FC = () => {
                     </Row>
                     <Form.Item
                       {...restField}
-                      name={[name, 'additionalConfig']}
+                      name={[name, "additionalConfig"]}
                       label="Additional Location Config"
                     >
                       <TextArea
@@ -376,7 +419,12 @@ const Servers: React.FC = () => {
                   </Card>
                 ))}
                 <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
+                  <Button
+                    type="dashed"
+                    onClick={() => add()}
+                    block
+                    icon={<PlusOutlined />}
+                  >
                     Add Location Block
                   </Button>
                 </Form.Item>

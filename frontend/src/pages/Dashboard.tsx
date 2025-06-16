@@ -46,7 +46,7 @@ const Dashboard: React.FC = () => {
   const activeUpstreams = upstreams.filter((u) => u.status === "active").length;
   const activeServers = servers.filter((s) => s.status === "active").length;
   const expiringCertificates = certificates.filter((c) => {
-    const expiryDate = new Date(c.expiredAt);
+    const expiryDate = new Date(c.expiresAt);
     const thirtyDaysFromNow = new Date();
     thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
     return expiryDate <= thirtyDaysFromNow;

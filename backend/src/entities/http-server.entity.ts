@@ -10,6 +10,7 @@ import { ListeningPort } from './listening-port.entity';
 import { Location } from './location.entity';
 import { ConfigVersion } from './config-version.entity';
 import { ServerDomainMapping } from './server-domain-mapping.entity';
+import { Certificate } from './certificate.entity';
 
 export enum HttpServerStatus {
   ACTIVE = 'active',
@@ -46,9 +47,16 @@ export class HttpServer {
   @Column({ type: 'varchar', length: 255, default: 'warn' })
   logLevel: string;
 
+  @Column({ type: 'bigint', unsigned: true, nullable: true })
+  certificateId: number;
+
   @ManyToOne(() => ListeningPort, (listeningPort) => listeningPort.httpServers)
   @JoinColumn({ name: 'listeningPortId' })
   listeningPort: ListeningPort;
+
+  @ManyToOne(() => Certificate, { nullable: true })
+  @JoinColumn({ name: 'certificateId' })
+  certificate: Certificate;
 
   @OneToMany(() => Location, (location) => location.httpServer)
   locations: Location[];

@@ -90,7 +90,7 @@ const Certificates: React.FC = () => {
       name: certificate.name,
       certificate: certificate.certificate,
       privateKey: certificate.privateKey,
-      expiredAt: certificate.expiresAt ? dayjs(certificate.expiresAt) : null,
+      expiresAt: certificate.expiresAt ? dayjs(certificate.expiresAt) : null,
       issuer: certificate.issuer,
       autoRenew: certificate.autoRenew,
     });
@@ -102,8 +102,8 @@ const Certificates: React.FC = () => {
         name: values.name,
         certificate: values.certificate,
         privateKey: values.privateKey,
-        expiresAt: values.expiredAt
-          ? values.expiredAt.format("YYYY-MM-DD")
+        expiresAt: values.expiresAt
+          ? values.expiresAt.toISOString()
           : undefined,
         issuer: values.issuer,
         autoRenew: values.autoRenew,
@@ -148,9 +148,20 @@ const Certificates: React.FC = () => {
     },
     {
       title: "Expires At",
-      dataIndex: "expiredAt",
-      key: "expiredAt",
-      render: (date: string) => new Date(date).toLocaleDateString(),
+      dataIndex: "expiresAt",
+      key: "expiresAt",
+      render: (date: string) => {
+        if (!date) return 'N/A';
+        try {
+          return new Date(date).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          });
+        } catch (error) {
+          return 'Invalid Date';
+        }
+      },
     },
     {
       title: "Auto Renew",
@@ -249,7 +260,7 @@ const Certificates: React.FC = () => {
           </Form.Item>
 
           <Form.Item
-            name="expiredAt"
+            name="expiresAt"
             label="Expiry Date"
             rules={[{ required: true, message: "Please select expiry date" }]}
           >

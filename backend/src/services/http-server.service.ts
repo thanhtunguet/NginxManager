@@ -48,14 +48,14 @@ export class HttpServerService {
 
   async findAll(): Promise<HttpServer[]> {
     return await this.httpServerRepository.find({
-      relations: ['listeningPort', 'locations', 'configVersions', 'domainMappings'],
+      relations: ['listeningPort', 'locations', 'configVersions', 'domainMappings', 'certificate'],
     });
   }
 
   async findOne(id: number): Promise<HttpServer> {
     const httpServer = await this.httpServerRepository.findOne({
       where: { id },
-      relations: ['listeningPort', 'locations', 'configVersions', 'domainMappings'],
+      relations: ['listeningPort', 'locations', 'configVersions', 'domainMappings', 'certificate'],
     });
     
     if (!httpServer) {

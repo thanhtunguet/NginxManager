@@ -73,6 +73,11 @@ export class CreateHttpServerDto {
   @IsOptional()
   logLevel?: string;
 
+  @ApiProperty({ description: 'SSL Certificate ID (required for SSL/HTTPS)', required: false })
+  @IsNumber()
+  @IsOptional()
+  certificateId?: number;
+
   @ApiProperty({ 
     description: 'Location blocks for this server',
     type: [CreateLocationForServerDto],
@@ -111,6 +116,9 @@ export class HttpServerResponseDto {
 
   @ApiProperty()
   logLevel: string;
+
+  @ApiProperty()
+  certificateId: number;
 
   @ApiProperty({ type: [LocationResponseDto] })
   locations: LocationResponseDto[];
