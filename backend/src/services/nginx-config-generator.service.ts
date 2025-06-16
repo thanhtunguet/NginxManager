@@ -115,7 +115,8 @@ export class NginxConfigGeneratorService {
       throw new Error('Main template not found');
     }
 
-    return mainTemplate(templateData);
+    const rawConfig = mainTemplate(templateData);
+    return this.formatNginxConfig(rawConfig);
   }
 
   private async processServerData(server: HttpServer): Promise<any> {
@@ -203,7 +204,61 @@ export class NginxConfigGeneratorService {
     const templateSource = fs.readFileSync(templatePath, 'utf8');
     const serverTemplate = Handlebars.compile(templateSource);
 
-    return serverTemplate(processedServer);
+    const rawConfig = serverTemplate(processedServer);
+    return this.formatNginxConfig(rawConfig);
+  }
+
+  private formatNginxConfig(config: string): string {
+    const lines = config.split('\n');
+    const formatted: string[] = [];
+    let indentLevel = 0;
+    const indentSize = 4; // 4 spaces per indent level
+    let lastLineWasEmpty = false;
+
+    for (let i = 0; i < lines.length; i++) {
+      let line = lines[i].trim();
+      
+      // Skip empty lines in raw output, but track them
+      if (line === '') {
+        continue;
+      }
+
+      // Handle closing braces - decrease indent before adding the line
+      if (line === '}') {
+        indentLevel = Math.max(0, indentLevel - 1);
+      }
+
+      // Add proper indentation
+      const indent = ' '.repeat(indentLevel * indentSize);
+      formatted.push(indent + line);
+
+      // Handle opening braces and blocks - increase indent after adding the line
+      if (line.endsWith('{')) {
+        indentLevel++;
+      }
+
+      // Add spacing around major blocks for readability
+      const shouldAddSpacing = (
+        line.startsWith('upstream ') || 
+        line.startsWith('server {') || 
+        (line === '}' && indentLevel === 0)
+      );
+      
+      if (shouldAddSpacing && !lastLineWasEmpty) {
+        formatted.push('');
+        lastLineWasEmpty = true;
+      } else {
+        lastLineWasEmpty = false;
+      }
+    }
+
+    // Remove any trailing empty lines and ensure file ends with single newline
+    while (formatted.length > 0 && formatted[formatted.length - 1] === '') {
+      formatted.pop();
+    }
+    
+    // Join with newlines and ensure proper line ending
+    return formatted.join('\n') + '\n';
   }
 
   validateConfig(config: string): { valid: boolean; errors?: string[] } {
