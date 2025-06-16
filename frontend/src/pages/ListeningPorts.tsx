@@ -22,7 +22,7 @@ const {Title} = Typography;
 const {Option} = Select;
 
 interface ListeningPort {
-    id: number;
+    id: string;
     name: string;
     port: number;
     protocol: string;
