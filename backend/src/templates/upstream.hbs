@@ -1,0 +1,6 @@
+{{#each upstreams}}
+upstream {{name}} {
+    server {{server}};
+    keepalive {{keepAlive}};
+}
+{{/each}}

@@ -1,0 +1,26 @@
+server {
+    listen {{listeningPort.port}}{{#if listeningPort.ssl}} ssl{{/if}}{{#if listeningPort.http2}} http2{{/if}};
+    server_name {{#if serverNames}}{{serverNames}}{{else}}_{{/if}};
+    
+    access_log {{accessLogPath}};
+    error_log {{errorLogPath}} {{logLevel}};
+
+{{#if sslConfig}}
+{{sslConfig}}
+{{/if}}
+
+{{#each accessRules}}
+    {{rule}} {{ipAddress}};
+{{/each}}
+{{#if accessRules.length}}
+    deny all;
+{{/if}}
+
+{{#each locations}}
+{{> location this}}
+{{/each}}
+
+{{#if additionalConfig}}
+    {{additionalConfig}}
+{{/if}}
+}

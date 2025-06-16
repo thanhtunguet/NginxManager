@@ -1,23 +1,34 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import * as Handlebars from 'handlebars';
+import * as fs from 'fs';
+import * as path from 'path';
 import {
-  HttpServer,
-  HttpServerStatus,
-  Upstream,
-  UpstreamStatus,
-  Location,
-  Domain,
-  Certificate,
-  ListeningPort,
   AccessRule,
   AccessRuleScope,
-  AccessRuleType,
+  Certificate,
   ConfigVersion,
+  Domain,
+  HttpServer,
+  HttpServerStatus,
+  ListeningPort,
+  Location,
+  Upstream,
+  UpstreamStatus,
 } from '../entities';
 
 @Injectable()
 export class NginxConfigGeneratorService {
+  private templates: Map<string, HandlebarsTemplateDelegate> = new Map();
+  private readonly templatesPath = path.join(
+    __dirname,
+    '..',
+    '..',
+    'src',
+    'templates',
+  );
+
   constructor(
     @InjectRepository(HttpServer)
     private readonly httpServerRepository: Repository<HttpServer>,
@@ -35,9 +46,42 @@ export class NginxConfigGeneratorService {
     private readonly accessRuleRepository: Repository<AccessRule>,
     @InjectRepository(ConfigVersion)
     private readonly configVersionRepository: Repository<ConfigVersion>,
-  ) {}
+  ) {
+    this.initializeTemplates();
+  }
+
+  private initializeTemplates(): void {
+    // Register partials
+    this.registerPartial('upstream', 'upstream.hbs');
+    this.registerPartial('server', 'server.hbs');
+    this.registerPartial('location', 'location.hbs');
+    this.registerPartial('ssl-config', 'ssl-config.hbs');
+
+    // Compile main template
+    this.compileTemplate('main', 'main.hbs');
+  }
+
+  private registerPartial(name: string, filename: string): void {
+    const templatePath = path.join(this.templatesPath, filename);
+    if (fs.existsSync(templatePath)) {
+      const templateSource = fs.readFileSync(templatePath, 'utf8');
+      Handlebars.registerPartial(name, templateSource);
+    }
+  }
+
+  private compileTemplate(name: string, filename: string): void {
+    const templatePath = path.join(this.templatesPath, filename);
+    if (fs.existsSync(templatePath)) {
+      const templateSource = fs.readFileSync(templatePath, 'utf8');
+      this.templates.set(name, Handlebars.compile(templateSource));
+    }
+  }
 
   async generateFullConfig(): Promise<string> {
+    return await this.generateServerBlocksOnly();
+  }
+
+  async generateServerBlocksOnly(): Promise<string> {
     const upstreams = await this.upstreamRepository.find({
       where: { status: UpstreamStatus.ACTIVE },
     });
@@ -52,118 +96,66 @@ export class NginxConfigGeneratorService {
       ],
     });
 
-    let config = this.generateMainConfig();
-    config += this.generateUpstreamBlocks(upstreams);
-    
-    for (const server of servers) {
-      config += await this.generateServerBlock(server);
+    const processedServers = await Promise.all(
+      servers.map((server) => this.processServerData(server)),
+    );
+
+    const templateData = {
+      upstreams: upstreams.length > 0 ? upstreams : null,
+      servers: processedServers,
+    };
+
+    const mainTemplate = this.templates.get('main');
+    if (!mainTemplate) {
+      throw new Error('Main template not found');
     }
 
-    return config;
+    return mainTemplate(templateData);
   }
 
-  private generateMainConfig(): string {
-    return `
-events {
-    worker_connections 1024;
-}
-
-http {
-    include       /etc/nginx/mime.types;
-    default_type  application/octet-stream;
-    
-    log_format main '$remote_addr - $remote_user [$time_local] "$request" '
-                    '$status $body_bytes_sent "$http_referer" '
-                    '"$http_user_agent" "$http_x_forwarded_for"';
-    
-    sendfile        on;
-    tcp_nopush      on;
-    tcp_nodelay     on;
-    keepalive_timeout  65;
-    types_hash_max_size 2048;
-    
-    gzip on;
-    gzip_vary on;
-    gzip_min_length 10240;
-    gzip_proxied expired no-cache no-store private must-revalidate auth;
-    gzip_types
-        text/plain
-        text/css
-        text/xml
-        text/javascript
-        application/x-javascript
-        application/xml+rss
-        application/javascript
-        application/json;
-
-`;
-  }
-
-  private generateUpstreamBlocks(upstreams: Upstream[]): string {
-    let config = '';
-    
-    for (const upstream of upstreams) {
-      config += `
-    upstream ${upstream.name} {
-        server ${upstream.server};
-        keepalive ${upstream.keepAlive};
-    }
-`;
-    }
-    
-    return config;
-  }
-
-  private async generateServerBlock(server: HttpServer): Promise<string> {
+  private async processServerData(server: HttpServer): Promise<any> {
     const accessRules = await this.accessRuleRepository.find({
       where: { serverId: server.id, scope: AccessRuleScope.SERVER },
     });
 
     const serverNames = server.domainMappings
-      .map(mapping => mapping.domain.domain)
+      .map((mapping) => mapping.domain.domain)
       .join(' ');
 
-    let config = `
-    server {
-        listen ${server.listeningPort.port}${server.listeningPort.ssl ? ' ssl' : ''}${server.listeningPort.http2 ? ' http2' : ''};
-        server_name ${serverNames || '_'};
-        
-        access_log ${server.accessLogPath};
-        error_log ${server.errorLogPath} ${server.logLevel};
-`;
+    const processedLocations = await Promise.all(
+      server.locations.map((location) => this.processLocationData(location)),
+    );
 
-    // Add SSL configuration if enabled
+    let sslConfig: string | null = null;
     if (server.listeningPort.ssl) {
-      config += await this.generateSSLConfig(server);
+      sslConfig = await this.generateSSLConfigData(server);
     }
 
-    // Add access rules
-    config += this.generateAccessRules(accessRules);
-
-    // Add locations
-    for (const location of server.locations) {
-      config += await this.generateLocationBlock(location);
-    }
-
-    // Add additional config
-    if (server.additionalConfig) {
-      config += `
-        ${server.additionalConfig}
-`;
-    }
-
-    config += `    }
-`;
-
-    return config;
+    return {
+      ...server,
+      serverNames,
+      accessRules,
+      locations: processedLocations,
+      sslConfig,
+    };
   }
 
-  private async generateSSLConfig(server: HttpServer): Promise<string> {
-    let config = '';
-    
+  private async processLocationData(location: Location): Promise<any> {
+    const accessRules = await this.accessRuleRepository.find({
+      where: { locationId: location.id, scope: AccessRuleScope.LOCATION },
+    });
+
+    return {
+      ...location,
+      accessRules,
+    };
+  }
+
+  private async generateSSLConfigData(server: HttpServer): Promise<string> {
     // Find certificates for the domains of this server
-    const domainIds = server.domainMappings.map(mapping => mapping.domain.id);
-    
+    const domainIds = server.domainMappings.map((mapping) => mapping.domain.id);
+    let certificateName = server.name; // fallback
+
     if (domainIds.length > 0) {
       // Get certificate mappings for the domains
       const certificateMappings = await this.certificateRepository
@@ -173,82 +165,15 @@ http {
         .getMany();
 
       if (certificateMappings.length > 0) {
-        const certificate = certificateMappings[0]; // Use first certificate found
-        config += `
-        ssl_certificate /etc/nginx/ssl/${certificate.name}.crt;
-        ssl_certificate_key /etc/nginx/ssl/${certificate.name}.key;`;
-      } else {
-        // Fallback to server name
-        config += `
-        ssl_certificate /etc/nginx/ssl/${server.name}.crt;
-        ssl_certificate_key /etc/nginx/ssl/${server.name}.key;`;
+        certificateName = certificateMappings[0].name; // Use first certificate found
       }
-    } else {
-      // Fallback to server name
-      config += `
-        ssl_certificate /etc/nginx/ssl/${server.name}.crt;
-        ssl_certificate_key /etc/nginx/ssl/${server.name}.key;`;
     }
 
-    config += `
-        ssl_protocols TLSv1.2 TLSv1.3;
-        ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:!DSS;
-        ssl_prefer_server_ciphers off;
-        ssl_session_timeout 1d;
-        ssl_session_cache shared:SSL:50m;
-        ssl_stapling on;
-        ssl_stapling_verify on;
-        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-        add_header X-Frame-Options DENY;
-        add_header X-Content-Type-Options nosniff;
-        add_header X-XSS-Protection "1; mode=block";
-`;
+    const templatePath = path.join(this.templatesPath, 'ssl-config.hbs');
+    const templateSource = fs.readFileSync(templatePath, 'utf8');
+    const sslTemplate = Handlebars.compile(templateSource);
 
-    return config;
-  }
-
-  private generateAccessRules(accessRules: AccessRule[]): string {
-    let config = '';
-    
-    for (const rule of accessRules) {
-      config += `        ${rule.rule} ${rule.ipAddress};\n`;
-    }
-    
-    if (accessRules.length > 0) {
-      config += `        deny all;\n`;
-    }
-    
-    return config;
-  }
-
-  private async generateLocationBlock(location: Location): Promise<string> {
-    const locationAccessRules = await this.accessRuleRepository.find({
-      where: { locationId: location.id, scope: AccessRuleScope.LOCATION },
-    });
-
-    let config = `
-        location ${location.path} {
-            proxy_pass http://${location.upstream.name};
-            proxy_set_header Host $host;
-            proxy_set_header X-Real-IP $remote_addr;
-            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto $scheme;
-            
-            client_max_body_size ${location.clientMaxBodySize};
-`;
-
-    // Add location-specific access rules
-    config += this.generateAccessRules(locationAccessRules);
-
-    // Add additional location config
-    if (location.additionalConfig) {
-      config += `            ${location.additionalConfig}\n`;
-    }
-
-    config += `        }
-`;
-
-    return config;
+    return sslTemplate({ certificateName });
   }
 
   async generateServerConfig(serverId: number): Promise<string> {
@@ -267,18 +192,23 @@ http {
       throw new Error(`Server with ID ${serverId} not found or inactive`);
     }
 
-    return await this.generateServerBlock(server);
+    const processedServer = await this.processServerData(server);
+    const templatePath = path.join(this.templatesPath, 'server.hbs');
+    const templateSource = fs.readFileSync(templatePath, 'utf8');
+    const serverTemplate = Handlebars.compile(templateSource);
+
+    return serverTemplate(processedServer);
   }
 
-  async validateConfig(config: string): Promise<{ valid: boolean; errors?: string[] }> {
+  validateConfig(config: string): { valid: boolean; errors?: string[] } {
     // This would implement nginx -t equivalent validation
     // For now, return a basic validation
     const errors: string[] = [];
-    
+
     if (!config.includes('server {')) {
       errors.push('Configuration must contain at least one server block');
     }
-    
+
     if (!config.includes('listen ')) {
       errors.push('Server blocks must contain listen directive');
     }
@@ -306,7 +236,7 @@ http {
     if (serverId) {
       await this.configVersionRepository.update(
         { serverId, isActive: true },
-        { isActive: false }
+        { isActive: false },
       );
     }
 
