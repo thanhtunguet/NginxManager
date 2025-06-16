@@ -73,7 +73,7 @@ const ListeningPorts: React.FC = () => {
         }
     };
 
-    const handleUpdate = async (id: number, values: ListeningPortFormData) => {
+    const handleUpdate = async (id: string, values: ListeningPortFormData) => {
         try {
             await axios.patch(`${API_BASE_URL}/listening-ports/${id}`, values);
             message.success("Listening port updated successfully!");
