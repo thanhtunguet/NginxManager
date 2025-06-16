@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import * as fs from 'fs';
+import * as path from 'path';
 import { NginxSettings } from '../entities/nginx-settings.entity';
 
 const execAsync = promisify(exec);
@@ -27,6 +28,8 @@ export class NginxSettingsService {
         configPath: '/etc/nginx/nginx.conf',
         testCommand: '#!/bin/bash\nnginx -t',
         reloadCommand: '#!/bin/bash\nnginx -s reload',
+        sslCertificatesPath: '/etc/nginx/ssl/certs',
+        sslPrivateKeysPath: '/etc/nginx/ssl/private',
       });
       await this.nginxSettingsRepository.save(settings);
     }
@@ -163,6 +166,98 @@ export class NginxSettingsService {
 
       // Write config to file
       fs.writeFileSync(settings.configPath, configContent);
+
+      return { success: true };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  async saveSSLCertificate(
+    domain: string,
+    certificateContent: string,
+    privateKeyContent: string,
+  ): Promise<{
+    success: boolean;
+    error?: string;
+    certPath?: string;
+    keyPath?: string;
+  }> {
+    try {
+      const settings = await this.getSettings();
+
+      // Create directories if they don't exist
+      if (!fs.existsSync(settings.sslCertificatesPath)) {
+        fs.mkdirSync(settings.sslCertificatesPath, { recursive: true });
+      }
+      if (!fs.existsSync(settings.sslPrivateKeysPath)) {
+        fs.mkdirSync(settings.sslPrivateKeysPath, { recursive: true });
+      }
+
+      // Sanitize domain name for filename
+      const sanitizedDomain = domain.replace(/[^a-zA-Z0-9.-]/g, '_');
+
+      // Define file paths
+      const certPath = path.join(
+        settings.sslCertificatesPath,
+        `${sanitizedDomain}.crt`,
+      );
+      const keyPath = path.join(
+        settings.sslPrivateKeysPath,
+        `${sanitizedDomain}.key`,
+      );
+
+      // Write certificate file
+      fs.writeFileSync(certPath, certificateContent);
+
+      // Write private key file with restricted permissions
+      fs.writeFileSync(keyPath, privateKeyContent);
+      fs.chmodSync(keyPath, '600'); // Read/write for owner only
+
+      return {
+        success: true,
+        certPath: certPath,
+        keyPath: keyPath,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
+      };
+    }
+  }
+
+  async deleteSSLCertificate(
+    domain: string,
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const settings = await this.getSettings();
+
+      // Sanitize domain name for filename
+      const sanitizedDomain = domain.replace(/[^a-zA-Z0-9.-]/g, '_');
+
+      // Define file paths
+      const certPath = path.join(
+        settings.sslCertificatesPath,
+        `${sanitizedDomain}.crt`,
+      );
+      const keyPath = path.join(
+        settings.sslPrivateKeysPath,
+        `${sanitizedDomain}.key`,
+      );
+
+      // Delete certificate file if it exists
+      if (fs.existsSync(certPath)) {
+        fs.unlinkSync(certPath);
+      }
+
+      // Delete private key file if it exists
+      if (fs.existsSync(keyPath)) {
+        fs.unlinkSync(keyPath);
+      }
 
       return { success: true };
     } catch (error) {

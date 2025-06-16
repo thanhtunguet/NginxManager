@@ -108,6 +108,7 @@ const Dashboard: React.FC = () => {
         <Col span={12}>
           <Card title="Recent Upstreams" style={{ marginBottom: 16 }}>
             <Table
+              rowKey={(record) => record.id}
               dataSource={recentUpstreams}
               columns={[
                 {
@@ -139,6 +140,7 @@ const Dashboard: React.FC = () => {
         <Col span={12}>
           <Card title="Recent Servers" style={{ marginBottom: 16 }}>
             <Table
+              rowKey={(record) => record.id}
               dataSource={recentServers}
               columns={[
                 {

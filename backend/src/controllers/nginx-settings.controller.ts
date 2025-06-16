@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, HttpStatus } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  HttpStatus,
+  Delete,
+  Param,
+} from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { NginxSettingsService } from '../services/nginx-settings.service';
 
@@ -19,6 +27,8 @@ export class NginxSettingsController {
       configPath: settings.configPath,
       testCommand: settings.testCommand,
       reloadCommand: settings.reloadCommand,
+      sslCertificatesPath: settings.sslCertificatesPath,
+      sslPrivateKeysPath: settings.sslPrivateKeysPath,
     };
   }
 
@@ -34,6 +44,8 @@ export class NginxSettingsController {
       configPath: string;
       testCommand: string;
       reloadCommand: string;
+      sslCertificatesPath: string;
+      sslPrivateKeysPath: string;
     },
   ) {
     const settings = await this.nginxSettingsService.saveSettings(settingsData);
@@ -42,6 +54,8 @@ export class NginxSettingsController {
       configPath: settings.configPath,
       testCommand: settings.testCommand,
       reloadCommand: settings.reloadCommand,
+      sslCertificatesPath: settings.sslCertificatesPath,
+      sslPrivateKeysPath: settings.sslPrivateKeysPath,
       updatedAt: settings.updatedAt,
     };
   }
@@ -83,6 +97,53 @@ export class NginxSettingsController {
       message: result.success
         ? 'Service reloaded successfully'
         : 'Service reload failed',
+    };
+  }
+
+  @Post('ssl/save')
+  @ApiOperation({ summary: 'Save SSL certificate and private key' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'SSL certificate saved successfully',
+  })
+  async saveSSLCertificate(
+    @Body()
+    sslData: {
+      domain: string;
+      certificate: string;
+      privateKey: string;
+    },
+  ) {
+    const result = await this.nginxSettingsService.saveSSLCertificate(
+      sslData.domain,
+      sslData.certificate,
+      sslData.privateKey,
+    );
+    return {
+      success: result.success,
+      error: result.error,
+      certPath: result.certPath,
+      keyPath: result.keyPath,
+      message: result.success
+        ? 'SSL certificate saved successfully'
+        : 'Failed to save SSL certificate',
+    };
+  }
+
+  @Delete('ssl/delete/:domain')
+  @ApiOperation({ summary: 'Delete SSL certificate and private key' })
+  @ApiResponse({
+    status: HttpStatus.OK,
+    description: 'SSL certificate deleted successfully',
+  })
+  async deleteSSLCertificate(@Param('domain') domain: string) {
+    const result = await this.nginxSettingsService.deleteSSLCertificate(domain);
+    return {
+      success: result.success,
+      error: result.error,
+      message: result.success
+        ? 'SSL certificate deleted successfully'
+        : 'Failed to delete SSL certificate',
     };
   }
 }

@@ -31,6 +31,8 @@ interface NginxServiceSettings {
   configPath: string;
   testCommand: string;
   reloadCommand: string;
+  sslCertificatesPath: string;
+  sslPrivateKeysPath: string;
 }
 
 interface CommandResult {
@@ -47,6 +49,8 @@ const NginxServiceSettings: React.FC = () => {
     configPath: "/etc/nginx/nginx.conf",
     testCommand: "#!/bin/bash\nnginx -t",
     reloadCommand: "#!/bin/bash\nnginx -s reload",
+    sslCertificatesPath: "/etc/nginx/ssl/certs",
+    sslPrivateKeysPath: "/etc/nginx/ssl/private",
   });
   const [lastTestResult, setLastTestResult] = useState<CommandResult | null>(
     null
@@ -58,37 +62,47 @@ const NginxServiceSettings: React.FC = () => {
     setLoading(true);
     try {
       const response = await axios.get(`${API_BASE_URL}/nginx-settings`);
-      setSettings(response.data);
-      form.setFieldsValue(response.data);
+      const data = response.data;
+      setSettings({
+        configPath: data.configPath,
+        testCommand: data.testCommand,
+        reloadCommand: data.reloadCommand,
+        sslCertificatesPath: data.sslCertificatesPath,
+        sslPrivateKeysPath: data.sslPrivateKeysPath,
+      });
+      form.setFieldsValue({
+        configPath: data.configPath,
+        testCommand: data.testCommand,
+        reloadCommand: data.reloadCommand,
+        sslCertificatesPath: data.sslCertificatesPath,
+        sslPrivateKeysPath: data.sslPrivateKeysPath,
+      });
     } catch (error) {
       console.error("Error loading settings:", error);
-      // Use default settings if API fails
-      form.setFieldsValue(settings);
+      message.error("Failed to load settings");
     } finally {
       setLoading(false);
     }
   };
 
-  const saveSettings = async (values: NginxServiceSettings) => {
+  const handleSubmit = async (values: NginxServiceSettings) => {
     setLoading(true);
     try {
-      await axios.post(`${API_BASE_URL}/nginx-settings`, values);
-      setSettings(values);
-      message.success("Settings saved successfully!");
+      const response = await axios.post(`${API_BASE_URL}/nginx-settings`, {
+        configPath: values.configPath,
+        testCommand: values.testCommand,
+        reloadCommand: values.reloadCommand,
+        sslCertificatesPath: values.sslCertificatesPath,
+        sslPrivateKeysPath: values.sslPrivateKeysPath,
+      });
+
+      message.success("Settings saved successfully");
+      setSettings(response.data);
     } catch (error) {
       console.error("Error saving settings:", error);
       message.error("Failed to save settings");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleSaveSettings = async () => {
-    try {
-      const values = await form.validateFields();
-      await saveSettings(values);
-    } catch (error) {
-      console.error("Form validation failed:", error);
     }
   };
 
@@ -189,7 +203,7 @@ const NginxServiceSettings: React.FC = () => {
       <Form
         form={form}
         layout="vertical"
-        onFinish={saveSettings}
+        onFinish={handleSubmit}
         onValuesChange={handleFormChange}
         initialValues={settings}
       >
@@ -278,6 +292,58 @@ const NginxServiceSettings: React.FC = () => {
               </Text>
             </Card>
           </Col>
+
+          <Col span={24}>
+            <Card
+              title="SSL Certificates Path"
+              style={{ marginBottom: "24px" }}
+            >
+              <Form.Item
+                name="sslCertificatesPath"
+                label="Path to SSL certificates"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter the SSL certificates path",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="/etc/nginx/ssl/certs"
+                  style={{ fontFamily: "monospace" }}
+                />
+              </Form.Item>
+              <Text type="secondary">
+                This is the path where SSL certificates are stored.
+              </Text>
+            </Card>
+          </Col>
+
+          <Col span={24}>
+            <Card
+              title="SSL Private Keys Path"
+              style={{ marginBottom: "24px" }}
+            >
+              <Form.Item
+                name="sslPrivateKeysPath"
+                label="Path to SSL private keys"
+                rules={[
+                  {
+                    required: true,
+                    message: "Please enter the SSL private keys path",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="/etc/nginx/ssl/private"
+                  style={{ fontFamily: "monospace" }}
+                />
+              </Form.Item>
+              <Text type="secondary">
+                This is the path where SSL private keys are stored.
+              </Text>
+            </Card>
+          </Col>
         </Row>
 
         <Divider />
@@ -286,7 +352,7 @@ const NginxServiceSettings: React.FC = () => {
           <Button
             type="primary"
             icon={<SaveOutlined />}
-            onClick={handleSaveSettings}
+            onClick={() => form.submit()}
             loading={loading}
           >
             Save Settings

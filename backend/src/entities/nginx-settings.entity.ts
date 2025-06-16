@@ -14,6 +14,12 @@ export class NginxSettings {
   @Column({ type: 'text' })
   reloadCommand: string;
 
+  @Column({ type: 'varchar', length: 500, default: '/etc/nginx/ssl/certs' })
+  sslCertificatesPath: string;
+
+  @Column({ type: 'varchar', length: 500, default: '/etc/nginx/ssl/private' })
+  sslPrivateKeysPath: string;
+
   @Column({ type: 'datetime', default: () => 'CURRENT_TIMESTAMP' })
   createdAt: Date;
 

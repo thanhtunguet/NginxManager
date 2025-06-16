@@ -16,6 +16,7 @@ import {
   Location,
   Upstream,
   UpstreamStatus,
+  NginxSettings,
 } from '../entities';
 
 @Injectable()
@@ -46,6 +47,8 @@ export class NginxConfigGeneratorService {
     private readonly accessRuleRepository: Repository<AccessRule>,
     @InjectRepository(ConfigVersion)
     private readonly configVersionRepository: Repository<ConfigVersion>,
+    @InjectRepository(NginxSettings)
+    private readonly nginxSettingsRepository: Repository<NginxSettings>,
   ) {
     this.initializeTemplates();
   }
@@ -188,11 +191,32 @@ export class NginxConfigGeneratorService {
       }
     }
 
+    // Get nginx settings for SSL paths
+    const nginxSettings = await this.nginxSettingsRepository.findOne({
+      where: {},
+      order: { id: 'DESC' },
+    });
+
+    const sslCertificatesPath =
+      nginxSettings?.sslCertificatesPath || '/etc/nginx/ssl/certs';
+    const sslPrivateKeysPath =
+      nginxSettings?.sslPrivateKeysPath || '/etc/nginx/ssl/private';
+
+    // Sanitize certificate name for filename
+    const sanitizedCertificateName = certificateName.replace(
+      /[^a-zA-Z0-9.-]/g,
+      '_',
+    );
+
     const templatePath = path.join(this.templatesPath, 'ssl-config.hbs');
     const templateSource = fs.readFileSync(templatePath, 'utf8');
     const sslTemplate = Handlebars.compile(templateSource);
 
-    return sslTemplate({ certificateName });
+    return sslTemplate({
+      certificateName: sanitizedCertificateName,
+      sslCertificatesPath,
+      sslPrivateKeysPath,
+    });
   }
 
   async generateServerConfig(serverId: number): Promise<string> {
@@ -229,7 +253,7 @@ export class NginxConfigGeneratorService {
     let lastLineWasEmpty = false;
 
     for (let i = 0; i < lines.length; i++) {
-      let line = lines[i].trim();
+      const line = lines[i].trim();
 
       // Skip empty lines in raw output, but track them
       if (line === '') {

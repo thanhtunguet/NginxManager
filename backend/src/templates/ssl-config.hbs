@@ -1,5 +1,5 @@
-    ssl_certificate /etc/nginx/ssl/{{certificateName}}.crt;
-    ssl_certificate_key /etc/nginx/ssl/{{certificateName}}.key;
+    ssl_certificate {{sslCertificatesPath}}/{{certificateName}}.crt;
+    ssl_certificate_key {{sslPrivateKeysPath}}/{{certificateName}}.key;
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-SHA:ECDHE-RSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:!DSS;
     ssl_prefer_server_ciphers off;

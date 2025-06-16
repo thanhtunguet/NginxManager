@@ -8,6 +8,8 @@ import ListeningPorts from "./pages/ListeningPorts";
 import NginxConfig from "./pages/NginxConfig";
 import NginxServiceSettings from "./pages/NginxServiceSettings";
 import Upstreams from "./pages/Upstreams";
+import Servers from "./pages/Servers";
+import Dashboard from "./pages/Dashboard";
 
 const { Content } = Layout;
 
@@ -18,10 +20,11 @@ function App() {
       <Layout>
         <Content className="nginx-manager-content">
           <Routes>
-            <Route path="/" element={<NginxConfig />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/upstreams" element={<Upstreams />} />
             <Route path="/domains" element={<Domains />} />
             <Route path="/certificates" element={<Certificates />} />
+            <Route path="/servers" element={<Servers />} />
             <Route path="/listening-ports" element={<ListeningPorts />} />
             <Route path="/nginx-config" element={<NginxConfig />} />
             <Route path="/nginx-settings" element={<NginxServiceSettings />} />
