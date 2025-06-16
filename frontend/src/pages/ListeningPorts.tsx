@@ -156,7 +156,9 @@ const ListeningPorts: React.FC = () => {
       dataIndex: "protocol",
       key: "protocol",
       render: (protocol: string) => (
-        <Tag color={protocol === "https" ? "green" : "orange"}>{protocol.toUpperCase()}</Tag>
+        <Tag color={protocol === "https" ? "green" : "orange"}>
+          {protocol.toUpperCase()}
+        </Tag>
       ),
     },
     {
@@ -164,7 +166,9 @@ const ListeningPorts: React.FC = () => {
       dataIndex: "ssl",
       key: "ssl",
       render: (ssl: boolean) => (
-        <Tag color={ssl ? "green" : "default"}>{ssl ? "Enabled" : "Disabled"}</Tag>
+        <Tag color={ssl ? "green" : "default"}>
+          {ssl ? "Enabled" : "Disabled"}
+        </Tag>
       ),
     },
     {
@@ -172,13 +176,16 @@ const ListeningPorts: React.FC = () => {
       dataIndex: "http2",
       key: "http2",
       render: (http2: boolean) => (
-        <Tag color={http2 ? "green" : "default"}>{http2 ? "Enabled" : "Disabled"}</Tag>
+        <Tag color={http2 ? "green" : "default"}>
+          {http2 ? "Enabled" : "Disabled"}
+        </Tag>
       ),
     },
     {
       title: "Actions",
       key: "actions",
-      render: (_, record: ListeningPort) => (
+      dataIndex: "id",
+      render: (_: number, record: ListeningPort) => (
         <Space>
           <Button
             type="primary"
@@ -194,7 +201,12 @@ const ListeningPorts: React.FC = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button type="primary" danger icon={<DeleteOutlined />} size="small">
+            <Button
+              type="primary"
+              danger
+              icon={<DeleteOutlined />}
+              size="small"
+            >
               Delete
             </Button>
           </Popconfirm>
@@ -280,7 +292,12 @@ const ListeningPorts: React.FC = () => {
             name="port"
             rules={[
               { required: true, message: "Please enter a port number" },
-              { type: "number", min: 1, max: 65535, message: "Port must be between 1 and 65535" },
+              {
+                type: "number",
+                min: 1,
+                max: 65535,
+                message: "Port must be between 1 and 65535",
+              },
             ]}
           >
             <InputNumber

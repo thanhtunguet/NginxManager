@@ -1,13 +1,13 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Layout } from "antd";
-import Sidebar from "./components/Sidebar";
-import NginxConfig from "./pages/NginxConfig";
-import Upstreams from "./pages/Upstreams";
-import Domains from "./pages/Domains";
-import Certificates from "./pages/Certificates";
-import ListeningPorts from "./pages/ListeningPorts";
-import NginxServiceSettings from "./pages/NginxServiceSettings";
+import { Route, Routes } from "react-router-dom";
 import "./App.css";
+import Sidebar from "./components/Sidebar";
+import Certificates from "./pages/Certificates";
+import Domains from "./pages/Domains";
+import ListeningPorts from "./pages/ListeningPorts";
+import NginxConfig from "./pages/NginxConfig";
+import NginxServiceSettings from "./pages/NginxServiceSettings";
+import Upstreams from "./pages/Upstreams";
 
 const { Content } = Layout;
 
