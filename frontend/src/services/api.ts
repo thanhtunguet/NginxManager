@@ -1,8 +1,6 @@
 import axios from "axios";
 import { message } from "antd";
-
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL || `${window.location.origin}/api/v1`;
+import { API_BASE_URL } from "../config/consts";
 
 const api = axios.create({
   baseURL: API_BASE_URL,

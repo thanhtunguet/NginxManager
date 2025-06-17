@@ -22,10 +22,9 @@ import {
 import axios from "axios";
 import NginxConfigEditor from "../components/NginxConfigEditor";
 import ConsoleOutput from "../components/ConsoleOutput";
+import { API_BASE_URL } from "../config/consts";
 
 const { Title, Text } = Typography;
-
-const API_BASE_URL = "http://localhost:3000/api/v1";
 
 interface NginxServiceSettings {
   configPath: string;
@@ -344,8 +343,6 @@ const NginxServiceSettings: React.FC = () => {
               </Text>
             </Card>
           </Col>
-
-          
         </Row>
 
         <Divider />

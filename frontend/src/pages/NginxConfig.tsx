@@ -27,10 +27,9 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import NginxConfigEditor from "../components/NginxConfigEditor";
+import { API_BASE_URL } from "../config/consts";
 
 const { Title, Text } = Typography;
-
-const API_BASE_URL = "http://localhost:3000/api/v1";
 
 interface ValidationResult {
   valid: boolean;
